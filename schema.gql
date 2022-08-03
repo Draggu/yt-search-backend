@@ -1,0 +1,217 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+schema {
+  query: Query
+  mutation: Mutation
+}
+
+"""
+requires authorization
+
+allowed forms:
+    - http headers
+        - Authorization: Bearer <token>
+"""
+directive @auth(
+  """if resource is not owned by current user field is nulled"""
+  onlyOwn: Boolean = false
+  optional: Boolean = false
+) on FIELD_DEFINITION
+
+directive @constraint(contains: String, endsWith: String, exclusiveMax: Float, exclusiveMin: Float, format: String, max: Float, maxLength: Int, min: Float, minLength: Int, multipleOf: Float, notContains: String, pattern: String, startsWith: String, uniqueTypeName: String) on ARGUMENT_DEFINITION | FIELD_DEFINITION | INPUT_FIELD_DEFINITION
+
+"""
+recaptcha token must be specified in 'recaptcha' header
+it also must match 'actionName'
+"""
+directive @recaptchaV3(actionName: String!) on FIELD_DEFINITION
+
+type ArticleEntity {
+  author: UserEntity!
+  createdAt: DateTime!
+  id: String!
+}
+
+type ArticleRevisionEntity {
+  article: ArticleEntity!
+  content: String!
+  editedAt: DateTime!
+  editedBy: UserEntity!
+  id: String!
+  isHiden: Boolean!
+  next: ArticleRevisionEntity!
+  previous: ArticleRevisionEntity
+}
+
+type AuthPayload {
+  token: TokenEntity!
+  user: UserEntity!
+}
+
+"""
+
+        example state before creation
+
+        root
+        ├ one
+        | ├ two
+        | └ three
+        ├ four
+        └ five
+
+        using
+          name: six
+          id: (here use id coresponding to one)
+
+        if creation mode is set to DESCENDANT this will add new categorie under specified id
+        the result will be:
+
+        root
+        ├ one
+        | ├ six
+        | ├ two
+        | └ three
+        ├ four
+        └ five
+
+        if creation mode is set to ANCESTOR this will add new categorie over specified id
+        the result will be:
+
+        root
+        ├ six
+        | └ one
+        |   ├ two
+        |   └ three
+        ├ four
+        └ five
+    
+"""
+enum CategorieCreationMode {
+  ANCESTOR
+  DESCENDANT
+}
+
+type CategorieEntity {
+  id: String!
+  name: String!
+  parentId: String
+}
+
+type ChannelEntity {
+  lastSyncWithYT: DateTime!
+  ytId: String!
+}
+
+input ChannelProposalInput {
+  categories: [ID!]!
+  description: String!
+  name: String!
+  ytId: String!
+}
+
+input CreateArticleInput {
+  content: String!
+  isHiden: Boolean!
+}
+
+input CreateCategorieInput {
+  categorieId: ID!
+  mode: CategorieCreationMode!
+  name: String!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+input LoginInput {
+  deviceName: String!
+  email: String! @constraint(format: "email")
+  password: String! @constraint(minLength: 8)
+}
+
+type Mutation {
+  createCategorie(createCategorieInput: CreateCategorieInput!): CategorieEntity!
+  login(login: LoginInput!): AuthPayload! @recaptchaV3(actionName: "login")
+  logout(logout: String!): TokenEntity! @recaptchaV3(actionName: "logout") @auth
+  proposeChannel(proposal: ChannelProposalInput!): ChannelEntity! @auth
+  proposeYoutuber(proposal: ProposeYoutuberInput!): YoutuberEntity! @auth
+  register(register: RegisterInput!): AuthPayload! @recaptchaV3(actionName: "register")
+  removeCategorie(id: ID!): CategorieEntity!
+  removeUser: UserEntity! @auth
+  renameCategorie(updateCategorieInput: UpdateCategorieInput!): CategorieEntity!
+  updateArticle(updateArticleInput: UpdateArticleInput!): ArticleEntity! @auth
+  updateUser(updateUserInput: UpdateUserInput!): UserEntity! @auth
+  writeArticle(createArticleInput: CreateArticleInput!): ArticleEntity! @auth
+}
+
+input ProposeYoutuberInput {
+  birthday: DateTime
+  categories: [ID!]!
+  description: String!
+  name: String!
+  realName: String
+}
+
+type Query {
+  article(id: ID!): ArticleEntity
+  channel(ytId: ID!): ChannelEntity
+  """
+  
+          categories are returned in flat normalized array
+          id defaults to ROOT categorie
+          
+  """
+  subCategories(id: ID): [CategorieEntity!]!
+  user(id: ID!): UserEntity
+  youtuber(id: ID!): YoutuberEntity!
+}
+
+input RegisterInput {
+  deviceName: String!
+  email: String! @constraint(format: "email")
+  name: String! @constraint(minLength: 3)
+  password: String! @constraint(minLength: 8)
+}
+
+type TokenEntity {
+  name: String!
+  owner: UserEntity!
+  token: String!
+}
+
+input UpdateArticleInput {
+  content: String
+  id: ID!
+  isHiden: Boolean
+}
+
+input UpdateCategorieInput {
+  categorieId: ID!
+  name: String!
+}
+
+input UpdateUserInput {
+  email: String @constraint(format: "email")
+  name: String @constraint(minLength: 3)
+}
+
+type UserEntity {
+  authTokens: [TokenEntity!]!
+  email: String!
+  id: String!
+  name: String!
+  password: String!
+}
+
+type YoutuberEntity {
+  birthday: DateTime
+  categories: [CategorieEntity!]!
+  description: String!
+  id: String!
+  name: String!
+  realName: String
+}
