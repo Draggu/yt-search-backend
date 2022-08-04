@@ -1,4 +1,4 @@
-import { HideField, ObjectType } from '@nestjs/graphql';
+import { Field, HideField, ID, ObjectType } from '@nestjs/graphql';
 import {
     Column,
     Entity,
@@ -16,6 +16,7 @@ import {
 @Tree('nested-set')
 export class CategorieEntity {
     @PrimaryGeneratedColumn('uuid')
+    @Field(() => ID)
     id: string;
 
     @Column()
@@ -30,5 +31,6 @@ export class CategorieEntity {
     parent: CategorieEntity;
 
     @RelationId((categorie: CategorieEntity) => categorie.parent)
+    @Field(() => ID)
     parentId?: string | null;
 }

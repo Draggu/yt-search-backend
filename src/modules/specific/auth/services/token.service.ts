@@ -31,10 +31,12 @@ export class TokenService {
         });
     }
 
-    destroy(currentUser: CurrentUser, tokenName: string) {
-        return this.tokenRepository.delete({
-            name: tokenName,
-            owner: currentUser,
-        });
+    destroy(currentUser: CurrentUser, token: string, isName: boolean) {
+        return this.tokenRepository.remove(
+            this.tokenRepository.create({
+                ...(isName ? { name: token } : { id: token }),
+                owner: currentUser,
+            }),
+        );
     }
 }

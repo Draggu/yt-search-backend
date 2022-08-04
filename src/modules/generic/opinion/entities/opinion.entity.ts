@@ -1,17 +1,11 @@
-import { HideField, ObjectType } from '@nestjs/graphql';
+import { Field, HideField, ID, ObjectType } from '@nestjs/graphql';
 import { UserEntity } from 'modules/specific/user/entities/user.entity';
-import {
-    Column,
-    Entity,
-    ManyToOne,
-    PrimaryGeneratedColumn,
-    RelationId,
-} from 'typeorm';
+import { Column, ManyToOne, PrimaryGeneratedColumn, RelationId } from 'typeorm';
 
-@Entity()
 @ObjectType('Opinion')
 export class OpinionEntity {
     @PrimaryGeneratedColumn('uuid')
+    @Field(() => ID)
     id: string;
 
     @Column({

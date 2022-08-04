@@ -1,4 +1,4 @@
-import { ObjectType } from '@nestjs/graphql';
+import { Field, ID, ObjectType } from '@nestjs/graphql';
 import { CategorieEntity } from 'modules/specific/categorie/entities/categorie.entity';
 import { UserEntity } from 'modules/specific/user/entities/user.entity';
 import {
@@ -16,6 +16,7 @@ import { ChannelEntity } from './channel.entity';
 @Tree('closure-table')
 export class ChannelRevisionEntity {
     @PrimaryGeneratedColumn('uuid')
+    @Field(() => ID)
     id: string;
 
     @ManyToOne(() => ChannelEntity)

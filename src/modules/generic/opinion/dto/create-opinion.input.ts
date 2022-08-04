@@ -1,15 +1,5 @@
-import { Field, InputType, Int, registerEnumType } from '@nestjs/graphql';
+import { Field, InputType, Int } from '@nestjs/graphql';
 import { ConstraintDirective } from 'directives/constraint/constraint-directive.decorator';
-
-export enum Opinionable {
-    Youtuber = 'Youtuber',
-    Channel = 'Channel',
-    Article = 'Article',
-}
-
-registerEnumType(Opinionable, {
-    name: 'Opinionable',
-});
 
 @InputType()
 export class CreateOpinionInput {
@@ -24,6 +14,4 @@ export class CreateOpinionInput {
         max: 500,
     })
     content?: string;
-
-    target: Opinionable;
 }

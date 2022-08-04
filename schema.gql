@@ -15,6 +15,11 @@ allowed forms:
         - Authorization: Bearer <token>
 """
 directive @auth(
+  """
+  there is required additional confirmation by password
+  send password in 'Authorization-Confirm' header
+  """
+  confirmationRequired: Boolean = false
   """if resource is not owned by current user field is nulled"""
   onlyOwn: Boolean = false
   optional: Boolean = false
@@ -29,19 +34,20 @@ it also must match 'actionName'
 directive @recaptchaV3(actionName: String!) on FIELD_DEFINITION
 
 type ArticleEntity {
+  """this does not include original Author! There is no order guarantee!"""
+  allEditors: [UserEntity!]!
   author: UserEntity!
+  content: ArticleRevisionEntity!
   createdAt: DateTime!
-  id: String!
+  id: ID!
 }
 
 type ArticleRevisionEntity {
-  article: ArticleEntity!
   content: String!
   editedAt: DateTime!
   editedBy: UserEntity!
-  id: String!
+  id: ID!
   isHiden: Boolean!
-  next: ArticleRevisionEntity!
   previous: ArticleRevisionEntity
 }
 
@@ -94,21 +100,21 @@ enum CategorieCreationMode {
 }
 
 type CategorieEntity {
-  id: String!
+  id: ID!
   name: String!
-  parentId: String
+  parentId: ID
 }
 
 type ChannelEntity {
   lastSyncWithYT: DateTime!
-  ytId: String!
+  ytId: ID!
 }
 
 input ChannelProposalInput {
   categories: [ID!]!
   description: String!
   name: String!
-  ytId: String!
+  ytId: ID!
 }
 
 input CreateArticleInput {
@@ -120,6 +126,11 @@ input CreateCategorieInput {
   categorieId: ID!
   mode: CategorieCreationMode!
   name: String!
+}
+
+input CreateOpinionInput {
+  content: String @constraint(max: 500)
+  stars: Int! @constraint(max: 10, min: 1)
 }
 
 """
@@ -134,9 +145,13 @@ input LoginInput {
 }
 
 type Mutation {
+  commentArticle(articleId: ID!, opinion: CreateOpinionInput!): Opinion! @auth(optional: true)
+  commentChannel(channelId: ID!, opinion: CreateOpinionInput!): Opinion! @auth(optional: true)
+  commentYoutuber(opinion: CreateOpinionInput!, youtuberId: ID!): Opinion! @auth(optional: true)
   createCategorie(createCategorieInput: CreateCategorieInput!): CategorieEntity!
+  destroyToken(logout: String!): TokenEntity! @recaptchaV3(actionName: "logout-device") @auth(confirmationRequired: true)
   login(login: LoginInput!): AuthPayload! @recaptchaV3(actionName: "login")
-  logout(logout: String!): TokenEntity! @recaptchaV3(actionName: "logout") @auth
+  logout: TokenEntity! @recaptchaV3(actionName: "logout") @auth
   proposeChannel(proposal: ChannelProposalInput!): ChannelEntity! @auth
   proposeYoutuber(proposal: ProposeYoutuberInput!): YoutuberEntity! @auth
   register(register: RegisterInput!): AuthPayload! @recaptchaV3(actionName: "register")
@@ -146,6 +161,12 @@ type Mutation {
   updateArticle(updateArticleInput: UpdateArticleInput!): ArticleEntity! @auth
   updateUser(updateUserInput: UpdateUserInput!): UserEntity! @auth
   writeArticle(createArticleInput: CreateArticleInput!): ArticleEntity! @auth
+}
+
+type Opinion {
+  content: String
+  id: ID!
+  stars: Float!
 }
 
 input ProposeYoutuberInput {
@@ -202,7 +223,7 @@ input UpdateUserInput {
 type UserEntity {
   authTokens: [TokenEntity!]!
   email: String!
-  id: String!
+  id: ID!
   name: String!
   password: String!
 }
@@ -211,7 +232,7 @@ type YoutuberEntity {
   birthday: DateTime
   categories: [CategorieEntity!]!
   description: String!
-  id: String!
+  id: ID!
   name: String!
   realName: String
 }

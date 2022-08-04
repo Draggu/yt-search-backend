@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import { CurrentUser } from 'directives/auth/types';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { CreateArticleInput, UpdateArticleInput } from './dto/article.input';
 import { ArticleRevisionEntity } from './entities/article-revision.entity';
 import { ArticleEntity } from './entities/article.entity';
@@ -13,6 +13,7 @@ export class ArticleService {
         private readonly articleRepository: Repository<ArticleEntity>,
         @InjectRepository(ArticleRevisionEntity)
         private readonly articleRevisionRepository: Repository<ArticleRevisionEntity>,
+        @InjectEntityManager() private readonly entityManager: EntityManager,
     ) {}
 
     create(currentUser: CurrentUser, createArticleInput: CreateArticleInput) {
@@ -59,5 +60,36 @@ export class ArticleService {
         });
 
         return this.articleRepository.save(article);
+    }
+
+    getContent(article: ArticleEntity) {
+        return this.articleRevisionRepository.findOneOrFail({
+            where: {
+                article,
+            },
+        });
+    }
+
+    async getAllEditors(article: ArticleEntity) {
+        const currentRevision = await this.getContent(article);
+
+        const editors = await this.entityManager
+            .getTreeRepository(ArticleRevisionEntity)
+            .findAncestors(currentRevision, {
+                relations: ['editedBy'],
+            });
+
+        return [
+            currentRevision.editedBy,
+            ...editors.map(({ editedBy }) => editedBy),
+        ];
+    }
+
+    previousRevision(revision: ArticleRevisionEntity) {
+        return this.articleRevisionRepository.findOneOrFail({
+            where: {
+                next: revision,
+            },
+        });
     }
 }

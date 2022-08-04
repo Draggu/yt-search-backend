@@ -3,13 +3,22 @@ import { Injectable } from '@nestjs/common';
 import { GqlDirectiveFactory } from 'config/graphql.module.config';
 import { Request } from 'express';
 import { SchemaTransform } from 'helpers/schema/transform';
-import { currentUserSymbol, userPromiseSymbol } from './consts';
+import { AuthService } from 'modules/specific/auth/services/auth.service';
+import { currentUserSymbol, tokenSymbol, userPromiseSymbol } from './consts';
+import { confirmationRule } from './rules/confiramtion.rule';
 import { optionalRule } from './rules/optional.rule';
 import { ownershipNullableTypes, ownershipRule } from './rules/ownership.rule';
-import { AuthProperties, CurrentUser, FieldConfig, RuleNext } from './types';
+import {
+    AuthProperties,
+    CurrentUserWithPassword,
+    FieldConfig,
+    RuleNext,
+} from './types';
 
 @Injectable()
 export class AuthDirective implements GqlDirectiveFactory {
+    constructor(private readonly authService: AuthService) {}
+
     readonly typeDefs = /* GraphQL */ `
         """
         requires authorization
@@ -24,6 +33,11 @@ export class AuthDirective implements GqlDirectiveFactory {
             if resource is not owned by current user field is nulled
             """
             onlyOwn: Boolean = false
+            """
+            there is required additional confirmation by password
+            send password in 'Authorization-Confirm' header
+            """
+            confirmationRequired: Boolean = false
         ) on FIELD_DEFINITION
     `;
 
@@ -55,8 +69,8 @@ export class AuthDirective implements GqlDirectiveFactory {
                             context.req[userPromiseSymbol] ||=
                                 this.setUserFromToken(context.req);
 
-                            const user: CurrentUser | undefined = await context
-                                .req[userPromiseSymbol];
+                            const user: CurrentUserWithPassword | undefined =
+                                await context.req[userPromiseSymbol];
 
                             const firstResolve = (() =>
                                 resolve?.(
@@ -69,6 +83,7 @@ export class AuthDirective implements GqlDirectiveFactory {
                             // rules are lazy
                             // call next one if they passed
                             const finalResolve = [
+                                confirmationRule(context, user),
                                 optionalRule(user),
                                 ownershipRule(parent, info, user),
                             ].reduce(
@@ -88,14 +103,17 @@ export class AuthDirective implements GqlDirectiveFactory {
 
     private async setUserFromToken(
         req: Request,
-    ): Promise<CurrentUser | undefined> {
+    ): Promise<CurrentUserWithPassword | undefined> {
         const token = req.header('Authorization')?.replace('Bearer ', '');
 
         if (token) {
-            // const user = await this.authService.fromToken(token);
-            // if (user) {
-            //     req[currentUserSymbol] = user;
-            // }
+            const { password, ...user } = await this.authService.fromToken(
+                token,
+            );
+
+            req[tokenSymbol] = token;
+
+            req[currentUserSymbol] = { ...user, passwordHash: password };
         }
 
         return req[currentUserSymbol];

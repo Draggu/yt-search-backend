@@ -1,25 +1,30 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { Inject, Injectable } from '@nestjs/common';
+import { InjectEntityManager } from '@nestjs/typeorm';
 import { CurrentUser } from 'directives/auth/types';
-import { Repository } from 'typeorm';
+import { EntityManager } from 'typeorm';
+import { OpinionTargetKey } from './consts';
 import { CreateOpinionInput } from './dto/create-opinion.input';
-import { OpinionEntity } from './entities/opinion.entity';
+import { OpinionConfig } from './opinion.module';
 
 @Injectable()
 export class OpinionService {
     constructor(
-        @InjectRepository(OpinionEntity)
-        private readonly opinionRepository: Repository<OpinionEntity>,
+        @Inject(OpinionTargetKey)
+        private readonly config: OpinionConfig,
+        @InjectEntityManager() private readonly entityManager: EntityManager,
     ) {}
 
     create(
-        currentUser: CurrentUser,
-        { target, ...createOpinionInput }: CreateOpinionInput,
+        createOpinionInput: CreateOpinionInput,
+        targetId: string,
+        currentUser?: CurrentUser,
     ) {
-        //TODO target matching
-        return this.opinionRepository.insert({
+        return this.entityManager.getRepository(this.config.target).save({
             ...createOpinionInput,
             author: currentUser,
+            target: {
+                [this.config.idKey]: targetId,
+            },
         });
     }
 }

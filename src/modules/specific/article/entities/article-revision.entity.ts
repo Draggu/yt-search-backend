@@ -1,4 +1,4 @@
-import { ObjectType } from '@nestjs/graphql';
+import { Field, HideField, ID, ObjectType } from '@nestjs/graphql';
 import { UserEntity } from 'modules/specific/user/entities/user.entity';
 import {
     Column,
@@ -17,9 +17,11 @@ import { ArticleEntity } from './article.entity';
 @Tree('closure-table')
 export class ArticleRevisionEntity {
     @PrimaryGeneratedColumn('uuid')
+    @Field(() => ID)
     id: string;
 
     @ManyToOne(() => ArticleEntity)
+    @HideField()
     article: ArticleEntity;
 
     @Column()
@@ -39,8 +41,10 @@ export class ArticleRevisionEntity {
     content: string;
 
     @TreeParent()
+    @HideField()
     previous?: ArticleRevisionEntity;
 
     @TreeChildren()
-    next: ArticleRevisionEntity;
+    @HideField()
+    next?: ArticleRevisionEntity;
 }

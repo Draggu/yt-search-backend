@@ -1,5 +1,6 @@
 import { Args, Mutation, Resolver } from '@nestjs/graphql';
 import { Auth } from 'directives/auth/decorators/auth.decorator';
+import { Token } from 'directives/auth/decorators/token.decorator';
 import { CurrentUser } from 'directives/auth/types';
 import { RecaptchaV3 } from 'directives/recaptcha-v3/recaptcha-v3.decorator';
 import { LoginInput, RegisterInput } from './dto/auth.input';
@@ -29,8 +30,20 @@ export class AuthResolver {
     @RecaptchaV3('logout')
     logout(
         @Auth() currentUser: CurrentUser,
+        @Token() token: string,
+    ): Promise<TokenEntity> {
+        return this.authService.logout(currentUser, token, false);
+    }
+
+    @Mutation(() => TokenEntity)
+    @RecaptchaV3('logout-device')
+    destroyToken(
+        @Auth({
+            confirmationRequired: true,
+        })
+        currentUser: CurrentUser,
         @Args('logout') tokenName: string,
     ): Promise<TokenEntity> {
-        return 1 as any; //TODO
+        return this.authService.logout(currentUser, tokenName);
     }
 }

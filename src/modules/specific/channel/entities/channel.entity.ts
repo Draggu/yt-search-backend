@@ -1,4 +1,4 @@
-import { Field, HideField, ObjectType } from '@nestjs/graphql';
+import { Field, HideField, ID, ObjectType } from '@nestjs/graphql';
 import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
 import { ChannelRevisionEntity } from './channel-revision.entity';
 
@@ -6,6 +6,7 @@ import { ChannelRevisionEntity } from './channel-revision.entity';
 @Entity()
 export class ChannelEntity {
     @PrimaryColumn()
+    @Field(() => ID)
     ytId: string;
 
     @Field({

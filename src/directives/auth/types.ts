@@ -4,6 +4,7 @@ import { GraphQLFieldConfig } from 'graphql';
 export interface AuthProperties {
     optional?: boolean;
     onlyOwn?: boolean;
+    confirmationRequired?: boolean;
 }
 
 export enum UserPermissions {
@@ -19,6 +20,10 @@ export enum UserPermissions {
 export type CurrentUser = {
     id: string;
     // permissions: UserPermissions;//TODO
+};
+
+export type CurrentUserWithPassword = CurrentUser & {
+    passwordHash: string;
 };
 
 export type Result = Record<string, string | undefined>;

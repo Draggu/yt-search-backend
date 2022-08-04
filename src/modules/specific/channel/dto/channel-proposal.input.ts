@@ -2,6 +2,7 @@ import { Field, ID, InputType } from '@nestjs/graphql';
 
 @InputType()
 export class ChannelProposalInput {
+    @Field(() => ID)
     ytId: string;
 
     name: string;

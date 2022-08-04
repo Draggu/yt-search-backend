@@ -1,4 +1,4 @@
-import { HideField, ObjectType } from '@nestjs/graphql';
+import { Field, HideField, ID, ObjectType } from '@nestjs/graphql';
 import { UserEntity } from 'modules/specific/user/entities/user.entity';
 import {
     Column,
@@ -13,6 +13,7 @@ import { ArticleRevisionEntity } from './article-revision.entity';
 @Entity()
 export class ArticleEntity {
     @PrimaryGeneratedColumn('uuid')
+    @Field(() => ID)
     id: string;
 
     @Column()
