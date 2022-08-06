@@ -1,4 +1,4 @@
-import { Field, ID, ObjectType } from '@nestjs/graphql';
+import { Field, HideField, ID, ObjectType } from '@nestjs/graphql';
 import { TokenEntity } from 'modules/specific/auth/entities/token.entity';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
@@ -19,5 +19,6 @@ export class UserEntity {
     password: string;
 
     @ManyToOne(() => TokenEntity, (token) => token.owner)
+    @HideField()
     authTokens: TokenEntity[];
 }

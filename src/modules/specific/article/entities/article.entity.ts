@@ -20,6 +20,7 @@ export class ArticleEntity {
     createdAt: Date;
 
     @ManyToOne(() => UserEntity)
+    @HideField()
     author: UserEntity;
 
     @OneToMany(() => ArticleRevisionEntity, (revision) => revision.article)

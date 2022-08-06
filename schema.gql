@@ -42,6 +42,14 @@ type ArticleEntity {
   id: ID!
 }
 
+type ArticleOpinion {
+  content: String
+  id: ID!
+  """integer in range 1-10"""
+  stars: Int!
+  target: ArticleEntity!
+}
+
 type ArticleRevisionEntity {
   content: String!
   editedAt: DateTime!
@@ -110,6 +118,14 @@ type ChannelEntity {
   ytId: ID!
 }
 
+type ChannelOpinion {
+  content: String
+  id: ID!
+  """integer in range 1-10"""
+  stars: Int!
+  target: ChannelEntity!
+}
+
 input ChannelProposalInput {
   categories: [ID!]!
   description: String!
@@ -119,7 +135,6 @@ input ChannelProposalInput {
 
 input CreateArticleInput {
   content: String!
-  isHiden: Boolean!
 }
 
 input CreateCategorieInput {
@@ -145,9 +160,9 @@ input LoginInput {
 }
 
 type Mutation {
-  commentArticle(articleId: ID!, opinion: CreateOpinionInput!): Opinion! @auth(optional: true)
-  commentChannel(channelId: ID!, opinion: CreateOpinionInput!): Opinion! @auth(optional: true)
-  commentYoutuber(opinion: CreateOpinionInput!, youtuberId: ID!): Opinion! @auth(optional: true)
+  commentArticle(articleId: ID!, opinion: CreateOpinionInput!): ArticleOpinion! @auth(optional: true)
+  commentChannel(channelId: ID!, opinion: CreateOpinionInput!): ChannelOpinion! @auth(optional: true)
+  commentYoutuber(opinion: CreateOpinionInput!, youtuberId: ID!): YoutuberOpinion! @auth(optional: true)
   createCategorie(createCategorieInput: CreateCategorieInput!): CategorieEntity!
   destroyToken(logout: String!): TokenEntity! @recaptchaV3(actionName: "logout-device") @auth(confirmationRequired: true)
   login(login: LoginInput!): AuthPayload! @recaptchaV3(actionName: "login")
@@ -161,12 +176,6 @@ type Mutation {
   updateArticle(updateArticleInput: UpdateArticleInput!): ArticleEntity! @auth
   updateUser(updateUserInput: UpdateUserInput!): UserEntity! @auth
   writeArticle(createArticleInput: CreateArticleInput!): ArticleEntity! @auth
-}
-
-type Opinion {
-  content: String
-  id: ID!
-  stars: Float!
 }
 
 input ProposeYoutuberInput {
@@ -221,7 +230,6 @@ input UpdateUserInput {
 }
 
 type UserEntity {
-  authTokens: [TokenEntity!]!
   email: String!
   id: ID!
   name: String!
@@ -230,9 +238,16 @@ type UserEntity {
 
 type YoutuberEntity {
   birthday: DateTime
-  categories: [CategorieEntity!]!
   description: String!
   id: ID!
   name: String!
   realName: String
+}
+
+type YoutuberOpinion {
+  content: String
+  id: ID!
+  """integer in range 1-10"""
+  stars: Int!
+  target: YoutuberEntity!
 }

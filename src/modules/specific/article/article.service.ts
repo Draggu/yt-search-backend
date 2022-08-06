@@ -65,7 +65,9 @@ export class ArticleService {
     getContent(article: ArticleEntity) {
         return this.articleRevisionRepository.findOneOrFail({
             where: {
-                article,
+                article: {
+                    id: article.id,
+                },
             },
         });
     }
@@ -88,7 +90,9 @@ export class ArticleService {
     previousRevision(revision: ArticleRevisionEntity) {
         return this.articleRevisionRepository.findOneOrFail({
             where: {
-                next: revision,
+                next: {
+                    id: revision.id,
+                },
             },
         });
     }

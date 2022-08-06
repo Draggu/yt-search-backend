@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { OpinionModule } from 'modules/generic/opinion/opinion.module';
 import { YoutuberOpinionEntity } from './entities/youtuber-opinion.entity';
 import { YoutuberEntity } from './entities/youtuber.entity';
+import { YoutuberOpinionFieldResolver } from './fields-resolvers/youtuber-opinion-youtuber-fields.resolver';
 import { YoutuberResolver } from './youtuber.resolver';
 import { YoutuberService } from './youtuber.service';
 
@@ -15,6 +16,10 @@ import { YoutuberService } from './youtuber.service';
         //TODO add revision
         TypeOrmModule.forFeature([YoutuberEntity]),
     ],
-    providers: [YoutuberResolver, YoutuberService],
+    providers: [
+        YoutuberResolver,
+        YoutuberOpinionFieldResolver,
+        YoutuberService,
+    ],
 })
 export class YoutuberModule {}

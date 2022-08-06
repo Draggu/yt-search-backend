@@ -2,9 +2,8 @@ import { Inject, Injectable } from '@nestjs/common';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { CurrentUser } from 'directives/auth/types';
 import { EntityManager } from 'typeorm';
-import { OpinionTargetKey } from './consts';
+import { OpinionConfig, OpinionTargetKey } from './consts';
 import { CreateOpinionInput } from './dto/create-opinion.input';
-import { OpinionConfig } from './opinion.module';
 
 @Injectable()
 export class OpinionService {

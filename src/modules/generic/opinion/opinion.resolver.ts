@@ -1,3 +1,4 @@
+import { Type } from '@nestjs/common';
 import { Args, ID, Mutation, Resolver } from '@nestjs/graphql';
 import { Auth } from 'directives/auth/decorators/auth.decorator';
 import { CurrentUser } from 'directives/auth/types';
@@ -10,15 +11,15 @@ export interface OpinionResolverOptions {
     tragetIdName: string;
 }
 
-export const createOpinionResolver = ({
-    methodName,
-    tragetIdName,
-}: OpinionResolverOptions) => {
+export const createOpinionResolver = (
+    entity: Type,
+    { methodName, tragetIdName }: OpinionResolverOptions,
+) => {
     @Resolver()
     class OpinionResolver {
         constructor(private readonly opinionService: OpinionService) {}
 
-        @Mutation(() => OpinionEntity, { name: methodName })
+        @Mutation(() => entity, { name: methodName })
         createOpinion(
             @Args('opinion') createOpinionInput: CreateOpinionInput,
             @Args(tragetIdName, { type: () => ID }) targetId: string,

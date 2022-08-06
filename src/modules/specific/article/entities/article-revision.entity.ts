@@ -1,9 +1,11 @@
 import { Field, HideField, ID, ObjectType } from '@nestjs/graphql';
+import { CategorieEntity } from 'modules/specific/categorie/entities/categorie.entity';
 import { UserEntity } from 'modules/specific/user/entities/user.entity';
 import {
     Column,
     Entity,
     Index,
+    ManyToMany,
     ManyToOne,
     PrimaryGeneratedColumn,
     Tree,
@@ -32,8 +34,12 @@ export class ArticleRevisionEntity {
     })
     isHiden: boolean;
 
-    //TODO list all editors
+    @ManyToMany(() => CategorieEntity)
+    @HideField()
+    categories: CategorieEntity[];
+
     @ManyToOne(() => UserEntity)
+    @HideField()
     editedBy: UserEntity;
 
     @Column()

@@ -1,4 +1,4 @@
-import { Field, ID, ObjectType } from '@nestjs/graphql';
+import { Field, HideField, ID, ObjectType } from '@nestjs/graphql';
 import { CategorieEntity } from 'modules/specific/categorie/entities/categorie.entity';
 import { UserEntity } from 'modules/specific/user/entities/user.entity';
 import {
@@ -20,9 +20,11 @@ export class ChannelRevisionEntity {
     id: string;
 
     @ManyToOne(() => ChannelEntity)
+    @HideField()
     channel: ChannelEntity;
 
-    //TODO @OneToMany(() => UserEntity)
+    @ManyToOne(() => UserEntity)
+    @HideField()
     editedBy: UserEntity;
 
     @Column()
@@ -32,5 +34,6 @@ export class ChannelRevisionEntity {
     description: string;
 
     @ManyToMany(() => CategorieEntity)
+    @HideField()
     categories: CategorieEntity[];
 }

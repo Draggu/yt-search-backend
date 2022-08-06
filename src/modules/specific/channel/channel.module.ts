@@ -6,6 +6,7 @@ import { ChannelService } from './channel.service';
 import { ChannelOpinionEntity } from './entities/channel-opinion.entity';
 import { ChannelRevisionEntity } from './entities/channel-revision.entity';
 import { ChannelEntity } from './entities/channel.entity';
+import { ChannelOpinionFieldResolver } from './fields-resolvers/channel-opinion-channel-fields.resolver';
 
 @Module({
     imports: [
@@ -15,6 +16,6 @@ import { ChannelEntity } from './entities/channel.entity';
         }),
         TypeOrmModule.forFeature([ChannelEntity, ChannelRevisionEntity]),
     ],
-    providers: [ChannelResolver, ChannelService],
+    providers: [ChannelResolver, ChannelOpinionFieldResolver, ChannelService],
 })
 export class ChannelModule {}

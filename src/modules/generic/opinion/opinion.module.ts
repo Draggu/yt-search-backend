@@ -1,20 +1,10 @@
 import { DynamicModule, Module, Type } from '@nestjs/common';
-import { OpinionTargetKey } from './consts';
-import { OpinionEntity } from './entities/opinion.entity';
+import { Opinion, OpinionConfig, OpinionTargetKey } from './consts';
 import {
     createOpinionResolver,
     OpinionResolverOptions,
 } from './opinion.resolver';
 import { OpinionService } from './opinion.service';
-
-export type Opinion = {
-    target: object;
-} & OpinionEntity;
-
-export interface OpinionConfig<T extends Opinion = Opinion> {
-    target: Type<T>;
-    idKey: keyof T;
-}
 
 @Module({})
 export class OpinionModule {
@@ -31,7 +21,7 @@ export class OpinionModule {
         return {
             module: OpinionModule,
             providers: [
-                createOpinionResolver(resolverOptions),
+                createOpinionResolver(target, resolverOptions),
                 {
                     provide: OpinionTargetKey,
                     useValue: config,
