@@ -1,17 +1,40 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import { CurrentUser } from 'directives/auth/types';
+import { Repository } from 'typeorm';
 import { ProposeYoutuberInput } from './dto/propose-youtuber.input';
+import { YoutuberEntity } from './entities/youtuber.entity';
 
 @Injectable()
 export class YoutuberService {
+    constructor(
+        @InjectRepository(YoutuberEntity)
+        private readonly youtuberRepository: Repository<YoutuberEntity>,
+    ) {}
+
     propose(
         currentUser: CurrentUser,
-        proposeYoutuberInput: ProposeYoutuberInput,
+        {
+            categories,
+            description,
+            name,
+            birthday,
+            realName,
+        }: ProposeYoutuberInput,
     ) {
-        return 1 as any; //TODO
+        return this.youtuberRepository.save({
+            newestContent: {
+                description,
+                name,
+                birthday,
+                realName,
+                editedBy: currentUser,
+                categories: categories.map((id) => ({ id })),
+            },
+        });
     }
 
     findOne(id: string) {
-        return 1 as any; //TODO
+        return this.youtuberRepository.findOne({ where: { id } });
     }
 }

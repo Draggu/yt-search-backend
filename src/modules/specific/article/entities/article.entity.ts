@@ -7,6 +7,7 @@ import {
     OneToMany,
     PrimaryGeneratedColumn,
 } from 'typeorm';
+import { ArticleOpinionEntity } from './article-opinion.entity';
 import { ArticleRevisionEntity } from './article-revision.entity';
 
 @ObjectType()
@@ -26,4 +27,8 @@ export class ArticleEntity {
     @OneToMany(() => ArticleRevisionEntity, (revision) => revision.article)
     @HideField()
     newestContent: ArticleRevisionEntity;
+
+    @OneToMany(() => ArticleOpinionEntity, (opinion) => opinion.target)
+    @HideField()
+    opinions: ArticleOpinionEntity[];
 }

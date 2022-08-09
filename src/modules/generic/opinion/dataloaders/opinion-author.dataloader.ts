@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { ToOneRelationDataloader } from 'common/dataloaders/to-one-relation.dataloader';
-import { ArticleEntity } from '../entities/article.entity';
+import { OpinionEntity } from '../entities/opinion.entity';
 
 @Injectable()
-export class ArticleAuthorDataloader extends ToOneRelationDataloader<
-    ArticleEntity,
+export class OpinionAuthorDataloader extends ToOneRelationDataloader<
+    OpinionEntity,
     'id',
     'author'
 > {
-    Entity = ArticleEntity;
+    Entity = OpinionEntity;
     id = 'id' as const;
     relation = 'author' as const;
 }

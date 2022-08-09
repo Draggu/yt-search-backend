@@ -5,8 +5,6 @@ export class ChannelProposalInput {
     @Field(() => ID)
     ytId: string;
 
-    name: string;
-
     description: string;
 
     @Field(() => [ID])

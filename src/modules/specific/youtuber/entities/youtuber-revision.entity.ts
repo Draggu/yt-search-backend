@@ -9,23 +9,32 @@ import {
     PrimaryGeneratedColumn,
     Tree,
 } from 'typeorm';
-import { ChannelEntity } from './channel.entity';
+import { YoutuberEntity } from './youtuber.entity';
 
-@ObjectType()
 @Entity()
 @Tree('closure-table')
-export class ChannelRevisionEntity {
+@ObjectType()
+export class YoutuberRevisionEntity {
     @PrimaryGeneratedColumn('uuid')
     @Field(() => ID)
     id: string;
 
-    @ManyToOne(() => ChannelEntity)
+    @ManyToOne(() => YoutuberEntity)
     @HideField()
-    channel: ChannelEntity;
+    youtuber: YoutuberEntity;
 
     @ManyToOne(() => UserEntity)
     @HideField()
     editedBy: UserEntity;
+
+    @Column()
+    name: string;
+
+    @Column()
+    realName?: string;
+
+    @Column()
+    birthday?: Date;
 
     @Column()
     description: string;

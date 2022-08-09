@@ -40,9 +40,11 @@ type ArticleEntity {
   content: ArticleRevisionEntity!
   createdAt: DateTime!
   id: ID!
+  opinions: [ArticleOpinion!]!
 }
 
 type ArticleOpinion {
+  author: UserEntity
   content: String
   id: ID!
   """integer in range 1-10"""
@@ -51,6 +53,7 @@ type ArticleOpinion {
 }
 
 type ArticleRevisionEntity {
+  categories: [CategorieEntity!]!
   content: String!
   editedAt: DateTime!
   editedBy: UserEntity!
@@ -114,11 +117,15 @@ type CategorieEntity {
 }
 
 type ChannelEntity {
+  content: ChannelRevisionEntity!
   lastSyncWithYT: DateTime!
+  name: String!
+  opinions: [ChannelOpinion!]!
   ytId: ID!
 }
 
 type ChannelOpinion {
+  author: UserEntity
   content: String
   id: ID!
   """integer in range 1-10"""
@@ -129,8 +136,14 @@ type ChannelOpinion {
 input ChannelProposalInput {
   categories: [ID!]!
   description: String!
-  name: String!
   ytId: ID!
+}
+
+type ChannelRevisionEntity {
+  categories: [CategorieEntity!]!
+  description: String!
+  editedBy: UserEntity!
+  id: ID!
 }
 
 input CreateArticleInput {
@@ -190,14 +203,12 @@ type Query {
   article(id: ID!): ArticleEntity
   channel(ytId: ID!): ChannelEntity
   """
-  
-          categories are returned in flat normalized array
-          id defaults to ROOT categorie
-          
+  categories are returned in flat normalized array
+  id defaults to ROOT categorie
   """
   subCategories(id: ID): [CategorieEntity!]!
   user(id: ID!): UserEntity
-  youtuber(id: ID!): YoutuberEntity!
+  youtuber(id: ID!): YoutuberEntity
 }
 
 input RegisterInput {
@@ -237,17 +248,26 @@ type UserEntity {
 }
 
 type YoutuberEntity {
-  birthday: DateTime
-  description: String!
+  content: YoutuberRevisionEntity!
   id: ID!
-  name: String!
-  realName: String
+  opinions: [YoutuberOpinion!]!
 }
 
 type YoutuberOpinion {
+  author: UserEntity
   content: String
   id: ID!
   """integer in range 1-10"""
   stars: Int!
   target: YoutuberEntity!
+}
+
+type YoutuberRevisionEntity {
+  birthday: DateTime
+  categories: [CategorieEntity!]!
+  description: String!
+  editedBy: UserEntity!
+  id: ID!
+  name: String!
+  realName: String
 }

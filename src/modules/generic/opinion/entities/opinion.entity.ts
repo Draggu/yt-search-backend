@@ -1,10 +1,17 @@
 import { Field, HideField, ID, Int, ObjectType } from '@nestjs/graphql';
 import { UserEntity } from 'modules/specific/user/entities/user.entity';
-import { Column, ManyToOne, PrimaryGeneratedColumn, RelationId } from 'typeorm';
+import {
+    Check,
+    Column,
+    ManyToOne,
+    PrimaryGeneratedColumn,
+    RelationId,
+} from 'typeorm';
 
 @ObjectType({
     isAbstract: true,
 })
+@Check('stars > 0 AND stars <= 10')
 export class OpinionEntity {
     @PrimaryGeneratedColumn('uuid')
     @Field(() => ID)
@@ -18,7 +25,6 @@ export class OpinionEntity {
     @Column({
         nullable: false,
         type: 'smallint',
-        length: 10,
     })
     @Field(() => Int, {
         description: 'integer in range 1-10',

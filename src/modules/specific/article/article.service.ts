@@ -30,9 +30,6 @@ export class ArticleService {
 
     async findOne(id: string) {
         return this.articleRepository.findOne({
-            relations: {
-                newestContent: true,
-            },
             where: {
                 id,
                 newestContent: {
@@ -48,9 +45,6 @@ export class ArticleService {
     ) {
         const article = await this.articleRepository.findOneOrFail({
             where: { id },
-            relations: {
-                newestContent: true,
-            },
         });
 
         article.newestContent = this.articleRevisionRepository.create({

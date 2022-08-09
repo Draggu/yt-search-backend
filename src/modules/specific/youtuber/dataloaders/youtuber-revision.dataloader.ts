@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { ToOneRelationDataloader } from 'common/dataloaders/to-one-relation.dataloader';
-import { ArticleRevisionEntity } from '../entities/article-revision.entity';
+import { YoutuberRevisionEntity } from '../entities/youtuber-revision.entity';
 
 @Injectable()
-export class ArticleRevisionEditorDataloader extends ToOneRelationDataloader<
-    ArticleRevisionEntity,
+export class YoutuberRevisionEditorDataloader extends ToOneRelationDataloader<
+    YoutuberRevisionEntity,
     'id',
     'editedBy'
 > {
-    Entity = ArticleRevisionEntity;
+    Entity = YoutuberRevisionEntity;
     id = 'id' as const;
     relation = 'editedBy' as const;
 }

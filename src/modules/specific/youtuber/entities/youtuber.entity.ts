@@ -1,5 +1,7 @@
-import { Field, ID, ObjectType } from '@nestjs/graphql';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Field, HideField, ID, ObjectType } from '@nestjs/graphql';
+import { Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { YoutuberOpinionEntity } from './youtuber-opinion.entity';
+import { YoutuberRevisionEntity } from './youtuber-revision.entity';
 
 @ObjectType()
 @Entity()
@@ -8,15 +10,11 @@ export class YoutuberEntity {
     @Field(() => ID)
     id: string;
 
-    @Column()
-    name: string;
+    @OneToMany(() => YoutuberRevisionEntity, (revision) => revision.youtuber)
+    @HideField()
+    newestContent: YoutuberRevisionEntity;
 
-    @Column()
-    realName?: string;
-
-    @Column()
-    birthday?: Date;
-
-    @Column()
-    description: string;
+    @OneToMany(() => YoutuberOpinionEntity, (opinion) => opinion.target)
+    @HideField()
+    opinions: YoutuberOpinionEntity[];
 }

@@ -17,10 +17,8 @@ export class CategorieResolver {
     }
 
     @Query(() => [CategorieEntity], {
-        description: `
-        categories are returned in flat normalized array
-        id defaults to ROOT categorie
-        `,
+        description:
+            'categories are returned in flat normalized array\nid defaults to ROOT categorie',
     })
     subCategories(
         @Args('id', { type: () => ID, nullable: true }) id?: string | null,

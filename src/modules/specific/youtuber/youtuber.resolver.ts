@@ -17,10 +17,10 @@ export class YoutuberResolver {
         return this.youtuberService.propose(currentUser, proposeYoutuberInput);
     }
 
-    @Query(() => YoutuberEntity)
+    @Query(() => YoutuberEntity, { nullable: true })
     youtuber(
         @Args('id', { type: () => ID }) id: string,
-    ): Promise<YoutuberEntity> {
+    ): Promise<YoutuberEntity | null> {
         return this.youtuberService.findOne(id);
     }
 }
