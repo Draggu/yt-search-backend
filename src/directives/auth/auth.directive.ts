@@ -3,7 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { GqlDirectiveFactory } from 'config/graphql.module.config';
 import { Request } from 'express';
 import { SchemaTransform } from 'helpers/schema/transform';
-import { AuthService } from 'modules/specific/auth/services/auth.service';
+import { TokenService } from 'modules/specific/auth/services/token.service';
 import { currentUserSymbol, tokenSymbol, userPromiseSymbol } from './consts';
 import { confirmationRule } from './rules/confiramtion.rule';
 import { optionalRule } from './rules/optional.rule';
@@ -17,7 +17,7 @@ import {
 
 @Injectable()
 export class AuthDirective implements GqlDirectiveFactory {
-    constructor(private readonly authService: AuthService) {}
+    constructor(private readonly tokenService: TokenService) {}
 
     readonly typeDefs = /* GraphQL */ `
         """
@@ -107,7 +107,7 @@ export class AuthDirective implements GqlDirectiveFactory {
         const token = req.header('Authorization')?.replace('Bearer ', '');
 
         if (token) {
-            const { password, ...user } = await this.authService.fromToken(
+            const { password, ...user } = await this.tokenService.getUser(
                 token,
             );
 

@@ -2,9 +2,11 @@ import { Parent, ResolveField, Resolver } from '@nestjs/graphql';
 import { Dataloader } from 'modules/infrastructure/dataloader/dataloader.decorator';
 import { CategorieEntity } from 'modules/specific/categorie/entities/categorie.entity';
 import { UserEntity } from 'modules/specific/user/entities/user.entity';
-import { ArticleService } from '../article.service';
-import { ArticleRevisionCategoriesDataloader } from '../dataloaders/article-revision-categories.dataloader';
-import { ArticleRevisionEditorDataloader } from '../dataloaders/article-revision-editor.dataloader';
+import {
+    ArticleRevisionCategoriesDataloader,
+    ArticleRevisionEditorDataloader,
+    ArticleRevisionPreviousDataloader,
+} from '../article.dataloader';
 import { ArticleRevisionEntity } from '../entities/article-revision.entity';
 
 @Resolver(() => ArticleRevisionEntity)
@@ -24,13 +26,12 @@ export class ArticleRevisionFieldResolver {
     ): Promise<CategorieEntity[]> {
         return dataloader.load(articleRevision.id);
     }
-    constructor(private readonly articleService: ArticleService) {}
 
     @ResolveField(() => ArticleRevisionEntity, { nullable: true })
     previous(
         @Parent() revision: ArticleRevisionEntity,
-    ): Promise<ArticleRevisionEntity | null> {
-        //TODO dataloader
-        return this.articleService.previousRevision(revision);
+        @Dataloader() dataloader: ArticleRevisionPreviousDataloader,
+    ): Promise<ArticleRevisionEntity | undefined | null> {
+        return dataloader.load(revision.id);
     }
 }

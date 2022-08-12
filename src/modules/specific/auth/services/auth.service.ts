@@ -19,14 +19,20 @@ export class AuthService {
     async register({ password, deviceName, ...registerInput }: RegisterInput) {
         const hashedPassword = await hash(password, 10);
 
-        const user = await this.userRepository.create({
-            password: hashedPassword,
-            ...registerInput,
+        return this.userRepository.manager.transaction(async (manager) => {
+            const user = await manager.save(UserEntity, {
+                password: hashedPassword,
+                ...registerInput,
+            });
+
+            const token = await this.tokenService.createFor(
+                user,
+                deviceName,
+                manager,
+            );
+
+            return { user, token };
         });
-
-        const token = await this.tokenService.createFor(user, deviceName);
-
-        return { user, token };
     }
 
     async login({ password, deviceName, ...loginInput }: LoginInput) {
@@ -39,10 +45,6 @@ export class AuthService {
         const token = await this.tokenService.createFor(user, deviceName);
 
         return { user, token };
-    }
-
-    fromToken(token: string) {
-        return this.tokenService.getUser(token);
     }
 
     logout(currentUser: CurrentUser, token: string, isName = true) {

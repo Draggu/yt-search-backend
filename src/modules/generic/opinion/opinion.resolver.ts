@@ -11,15 +11,17 @@ import { Auth } from 'directives/auth/decorators/auth.decorator';
 import { CurrentUser } from 'directives/auth/types';
 import { Dataloader } from 'modules/infrastructure/dataloader/dataloader.decorator';
 import { UserEntity } from 'modules/specific/user/entities/user.entity';
-import { OpinionAuthorDataloader } from './dataloaders/opinion-author.dataloader';
 import { CreateOpinionInput } from './dto/create-opinion.input';
 import { OpinionEntity } from './entities/opinion.entity';
+import { OpinionAuthorDataloader } from './opinion.dataloader';
 import { OpinionService } from './opinion.service';
 
 export interface OpinionResolverOptions {
     methodName: string;
     targetIdName: string;
 }
+
+let i = 0;
 
 export const createOpinionResolver = (
     entity: Type,
@@ -31,8 +33,13 @@ export const createOpinionResolver = (
 
         @Mutation(() => entity, { name: methodName })
         createOpinion(
+            //FIXME
+            // name must be same across all calls of createOpinionResolver
+            // otherwise targetId is undefined
+            // idk why
+            @Args({ type: () => ID, name: 'targetIdName' })
+            targetId: string,
             @Args('opinion') createOpinionInput: CreateOpinionInput,
-            @Args(targetIdName, { type: () => ID }) targetId: string,
             @Auth({
                 optional: true,
             })

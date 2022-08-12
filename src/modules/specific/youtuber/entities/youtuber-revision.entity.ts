@@ -6,13 +6,12 @@ import {
     Entity,
     ManyToMany,
     ManyToOne,
+    OneToOne,
     PrimaryGeneratedColumn,
-    Tree,
 } from 'typeorm';
 import { YoutuberEntity } from './youtuber.entity';
 
 @Entity()
-@Tree('closure-table')
 @ObjectType()
 export class YoutuberRevisionEntity {
     @PrimaryGeneratedColumn('uuid')
@@ -42,4 +41,8 @@ export class YoutuberRevisionEntity {
     @ManyToMany(() => CategorieEntity)
     @HideField()
     categories: CategorieEntity[];
+
+    @OneToOne(() => YoutuberRevisionEntity)
+    @HideField()
+    previous?: YoutuberRevisionEntity;
 }

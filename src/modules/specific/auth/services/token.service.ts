@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CurrentUser } from 'directives/auth/types';
 import { UserEntity } from 'modules/specific/user/entities/user.entity';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { TokenEntity } from '../entities/token.entity';
 
 @Injectable()
@@ -10,24 +10,32 @@ export class TokenService {
     constructor(
         @InjectRepository(TokenEntity)
         private readonly tokenRepository: Repository<TokenEntity>,
-        @InjectRepository(UserEntity)
-        private readonly userRepository: Repository<UserEntity>,
     ) {}
 
     getUser(token: string) {
-        return this.userRepository.findOneOrFail({
-            where: {
-                authTokens: {
+        return this.tokenRepository
+            .findOneOrFail({
+                where: {
                     id: token,
                 },
-            },
-        });
+                relations: {
+                    owner: {},
+                },
+                select: {},
+            })
+            .then(({ owner: { id, password } }) => ({ id, password }));
     }
 
-    createFor(currentUser: CurrentUser, tokenName: string) {
-        return this.tokenRepository.create({
+    createFor(
+        user: UserEntity,
+        tokenName: string,
+        entityManager?: EntityManager,
+    ) {
+        const manager = entityManager || this.tokenRepository.manager;
+
+        return manager.save(TokenEntity, {
             name: tokenName,
-            owner: currentUser,
+            owner: user,
         });
     }
 

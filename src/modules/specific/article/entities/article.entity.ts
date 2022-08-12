@@ -5,6 +5,7 @@ import {
     Entity,
     ManyToOne,
     OneToMany,
+    OneToOne,
     PrimaryGeneratedColumn,
 } from 'typeorm';
 import { ArticleOpinionEntity } from './article-opinion.entity';
@@ -17,14 +18,23 @@ export class ArticleEntity {
     @Field(() => ID)
     id: string;
 
-    @Column()
+    @Column({
+        default: () => 'NOW()',
+    })
     createdAt: Date;
 
     @ManyToOne(() => UserEntity)
     @HideField()
     author: UserEntity;
 
-    @OneToMany(() => ArticleRevisionEntity, (revision) => revision.article)
+    @OneToOne(
+        () => ArticleRevisionEntity,
+        (revision) => revision.articleNewestContentBackward,
+        {
+            cascade: true,
+            nullable: false,
+        },
+    )
     @HideField()
     newestContent: ArticleRevisionEntity;
 

@@ -21,7 +21,9 @@ export class ChannelEntity {
     @Column()
     name: string;
 
-    @OneToMany(() => ChannelRevisionEntity, (revision) => revision.channel)
+    @OneToMany(() => ChannelRevisionEntity, (revision) => revision.channel, {
+        cascade: true,
+    })
     @HideField()
     newestContent: ChannelRevisionEntity;
 

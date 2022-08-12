@@ -1,7 +1,9 @@
 import { Parent, ResolveField, Resolver } from '@nestjs/graphql';
 import { Dataloader } from 'modules/infrastructure/dataloader/dataloader.decorator';
-import { ChannelContentDataloader } from '../dataloaders/channel-content.dataloader';
-import { ChannelOpinionsDataloader } from '../dataloaders/channel-opinions.dataloader';
+import {
+    ChannelContentDataloader,
+    ChannelOpinionsDataloader,
+} from '../channel.dataloader';
 import { ChannelOpinionEntity } from '../entities/channel-opinion.entity';
 import { ChannelRevisionEntity } from '../entities/channel-revision.entity';
 import { ChannelEntity } from '../entities/channel.entity';

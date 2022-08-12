@@ -5,28 +5,34 @@ import {
     Column,
     Entity,
     Index,
+    JoinColumn,
     ManyToMany,
     ManyToOne,
+    OneToOne,
     PrimaryGeneratedColumn,
-    Tree,
-    TreeChildren,
-    TreeParent,
 } from 'typeorm';
 import { ArticleEntity } from './article.entity';
 
 @ObjectType()
 @Entity()
-@Tree('closure-table')
 export class ArticleRevisionEntity {
     @PrimaryGeneratedColumn('uuid')
     @Field(() => ID)
     id: string;
 
     @ManyToOne(() => ArticleEntity)
+    @JoinColumn()
     @HideField()
     article: ArticleEntity;
 
-    @Column()
+    @OneToOne(() => ArticleEntity, (article) => article.newestContent)
+    @JoinColumn()
+    @HideField()
+    articleNewestContentBackward?: ArticleEntity;
+
+    @Column({
+        default: () => 'NOW()',
+    })
     editedAt: Date;
 
     @Column({
@@ -43,14 +49,10 @@ export class ArticleRevisionEntity {
     editedBy: UserEntity;
 
     @Column()
-    @Index() //TODO Gin tsvector_ops
+    @Index()
     content: string;
 
-    @TreeParent()
+    @OneToOne(() => ArticleRevisionEntity)
     @HideField()
     previous?: ArticleRevisionEntity;
-
-    @TreeChildren()
-    @HideField()
-    next?: ArticleRevisionEntity;
 }

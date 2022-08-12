@@ -1796,6 +1796,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/node-fetch@npm:^2.6.2":
+  version: 2.6.2
+  resolution: "@types/node-fetch@npm:2.6.2"
+  dependencies:
+    "@types/node": "*"
+    form-data: ^3.0.0
+  checksum: 6f73b1470000d303d25a6fb92875ea837a216656cb7474f66cdd67bb014aa81a5a11e7ac9c21fe19bee9ecb2ef87c1962bceeaec31386119d1ac86e4c30ad7a6
+  languageName: node
+  linkType: hard
+
 "@types/node@npm:*":
   version: 18.0.1
   resolution: "@types/node@npm:18.0.1"
@@ -6388,7 +6398,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-fetch@npm:^2.6.1, node-fetch@npm:^2.6.7":
+"node-fetch@npm:2, node-fetch@npm:^2.6.1, node-fetch@npm:^2.6.7":
   version: 2.6.7
   resolution: "node-fetch@npm:2.6.7"
   dependencies:
@@ -8813,6 +8823,7 @@ __metadata:
     "@types/jest": ^27.0.1
     "@types/lodash.groupby": ^4
     "@types/node": ^16.0.0
+    "@types/node-fetch": ^2.6.2
     "@types/pg": ^8
     "@types/prettier": ^2.6.3
     "@types/rimraf": ^3.0.2
@@ -8832,6 +8843,7 @@ __metadata:
     jest: ^27.2.5
     json-to-graphql-query: ^2.2.4
     lodash.groupby: ^4.6.0
+    node-fetch: 2
     pg: ^8.7.3
     prettier: ^2.3.2
     prettier-plugin-organize-imports: ^2.3.4

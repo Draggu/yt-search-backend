@@ -26,8 +26,12 @@ export class UserService {
             ...updateUserInput,
         });
     }
-    //TODO add bans
+
     remove({ id }: CurrentUser) {
-        return this.userRepository.remove(this.userRepository.create({ id }));
+        //TODO check for potential failures
+        //TODO remove all data like email etc. keep record with id only for integrity
+        return this.userRepository.softRemove(
+            this.userRepository.create({ id }),
+        );
     }
 }

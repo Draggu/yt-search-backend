@@ -13,7 +13,7 @@ export class AuthResolver {
     constructor(private readonly authService: AuthService) {}
 
     @Mutation(() => AuthPayload)
-    @RecaptchaV3('register')
+    // @RecaptchaV3('register')
     register(
         @Args('register') registerInput: RegisterInput,
     ): Promise<AuthPayload> {

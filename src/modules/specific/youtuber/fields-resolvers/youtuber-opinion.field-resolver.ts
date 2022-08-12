@@ -1,5 +1,5 @@
 import { Parent, ResolveField, Resolver } from '@nestjs/graphql';
-import { OpinionTargetDataloader } from 'modules/generic/opinion/dataloaders/opinion-target.dataloader';
+import { OpinionTargetDataloader } from 'modules/generic/opinion/opinion.dataloader';
 import { Dataloader } from 'modules/infrastructure/dataloader/dataloader.decorator';
 import { YoutuberOpinionEntity } from '../entities/youtuber-opinion.entity';
 import { YoutuberEntity } from '../entities/youtuber.entity';

@@ -6,14 +6,13 @@ import {
     Entity,
     ManyToMany,
     ManyToOne,
+    OneToOne,
     PrimaryGeneratedColumn,
-    Tree,
 } from 'typeorm';
 import { ChannelEntity } from './channel.entity';
 
 @ObjectType()
 @Entity()
-@Tree('closure-table')
 export class ChannelRevisionEntity {
     @PrimaryGeneratedColumn('uuid')
     @Field(() => ID)
@@ -33,4 +32,8 @@ export class ChannelRevisionEntity {
     @ManyToMany(() => CategorieEntity)
     @HideField()
     categories: CategorieEntity[];
+
+    @OneToOne(() => ChannelRevisionEntity)
+    @HideField()
+    previous?: ChannelRevisionEntity;
 }

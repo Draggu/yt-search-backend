@@ -34,8 +34,6 @@ it also must match 'actionName'
 directive @recaptchaV3(actionName: String!) on FIELD_DEFINITION
 
 type ArticleEntity {
-  """this does not include original Author! There is no order guarantee!"""
-  allEditors: [UserEntity!]!
   author: UserEntity!
   content: ArticleRevisionEntity!
   createdAt: DateTime!
@@ -173,16 +171,16 @@ input LoginInput {
 }
 
 type Mutation {
-  commentArticle(articleId: ID!, opinion: CreateOpinionInput!): ArticleOpinion! @auth(optional: true)
-  commentChannel(channelId: ID!, opinion: CreateOpinionInput!): ChannelOpinion! @auth(optional: true)
-  commentYoutuber(opinion: CreateOpinionInput!, youtuberId: ID!): YoutuberOpinion! @auth(optional: true)
+  commentArticle(opinion: CreateOpinionInput!, targetIdName: ID!): ArticleOpinion! @auth(optional: true)
+  commentChannel(opinion: CreateOpinionInput!, targetIdName: ID!): ChannelOpinion! @auth(optional: true)
+  commentYoutuber(opinion: CreateOpinionInput!, targetIdName: ID!): YoutuberOpinion! @auth(optional: true)
   createCategorie(createCategorieInput: CreateCategorieInput!): CategorieEntity!
   destroyToken(logout: String!): TokenEntity! @recaptchaV3(actionName: "logout-device") @auth(confirmationRequired: true)
   login(login: LoginInput!): AuthPayload! @recaptchaV3(actionName: "login")
   logout: TokenEntity! @recaptchaV3(actionName: "logout") @auth
   proposeChannel(proposal: ChannelProposalInput!): ChannelEntity! @auth
   proposeYoutuber(proposal: ProposeYoutuberInput!): YoutuberEntity! @auth
-  register(register: RegisterInput!): AuthPayload! @recaptchaV3(actionName: "register")
+  register(register: RegisterInput!): AuthPayload!
   removeCategorie(id: ID!): CategorieEntity!
   removeUser: UserEntity! @auth
   renameCategorie(updateCategorieInput: UpdateCategorieInput!): CategorieEntity!

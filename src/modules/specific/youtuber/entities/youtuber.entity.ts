@@ -10,7 +10,9 @@ export class YoutuberEntity {
     @Field(() => ID)
     id: string;
 
-    @OneToMany(() => YoutuberRevisionEntity, (revision) => revision.youtuber)
+    @OneToMany(() => YoutuberRevisionEntity, (revision) => revision.youtuber, {
+        cascade: true,
+    })
     @HideField()
     newestContent: YoutuberRevisionEntity;
 

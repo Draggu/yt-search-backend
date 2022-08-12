@@ -14,7 +14,7 @@ import {
 @ObjectType()
 export class TokenEntity {
     @Field({ name: 'token' })
-    @PrimaryGeneratedColumn()
+    @PrimaryGeneratedColumn('uuid')
     id: string;
 
     @Column()
@@ -22,6 +22,7 @@ export class TokenEntity {
 
     @ManyToOne(() => UserEntity, (user) => user.authTokens, {
         nullable: false,
+        cascade: true,
     })
     @JoinColumn()
     owner: UserEntity;
