@@ -5,7 +5,7 @@ import { currentUserSymbol } from '../consts';
 import { prepareAuthDirective } from '../prepare';
 import { AuthProperties } from '../types';
 
-export const Auth = (authProperties?: AuthProperties) =>
+export const Auth = (authProperties?: Partial<AuthProperties>) =>
     createParamDecorator(
         (_: unknown, ctx: ExecutionContext) =>
             getRequest(ctx)[currentUserSymbol],

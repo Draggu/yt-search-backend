@@ -1,13 +1,16 @@
 import { getDirective, MapperKind, mapSchema } from '@graphql-tools/utils';
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { GqlDirectiveFactory } from 'config/graphql.module.config';
 import { Request } from 'express';
+import { isNonNullType } from 'graphql';
 import { SchemaTransform } from 'helpers/schema/transform';
 import { TokenService } from 'modules/specific/auth/services/token.service';
 import { currentUserSymbol, tokenSymbol, userPromiseSymbol } from './consts';
 import { confirmationRule } from './rules/confiramtion.rule';
 import { optionalRule } from './rules/optional.rule';
-import { ownershipNullableTypes, ownershipRule } from './rules/ownership.rule';
+import { ownershipRule } from './rules/ownership.rule';
+import { permissionRule } from './rules/permission.rule';
 import {
     AuthProperties,
     CurrentUserWithPassword,
@@ -17,7 +20,10 @@ import {
 
 @Injectable()
 export class AuthDirective implements GqlDirectiveFactory {
-    constructor(private readonly tokenService: TokenService) {}
+    constructor(
+        private readonly config: ConfigService,
+        private readonly tokenService: TokenService,
+    ) {}
 
     readonly typeDefs = /* GraphQL */ `
         """
@@ -38,10 +44,20 @@ export class AuthDirective implements GqlDirectiveFactory {
             send password in 'Authorization-Confirm' header
             """
             confirmationRequired: Boolean = false
+            """
+            permissions required to complete action
+            authed user MUST have ALL of these permissions
+            """
+            permissions: [Permissions!] = []
         ) on FIELD_DEFINITION
     `;
 
     create(): SchemaTransform {
+        const disablePermissions: boolean =
+            this.config.get('DISABLE_PERMISSIONS', false) &&
+            // dont allow this flag in production
+            this.config.get('NODE_ENV') !== 'production';
+
         return (schema) =>
             mapSchema(schema, {
                 [MapperKind.FIELD]: (fieldConfig: FieldConfig) => {
@@ -52,8 +68,13 @@ export class AuthDirective implements GqlDirectiveFactory {
                     )?.[0] as AuthProperties | undefined;
 
                     if (directiveArgs) {
+                        // all fields that have ownership must be nullable
                         if (directiveArgs.onlyOwn) {
-                            ownershipNullableTypes(fieldConfig);
+                            const { type } = fieldConfig;
+
+                            fieldConfig.type = isNonNullType(type)
+                                ? type.ofType
+                                : type;
                         }
 
                         const { resolve } = fieldConfig;
@@ -72,25 +93,23 @@ export class AuthDirective implements GqlDirectiveFactory {
                             const user: CurrentUserWithPassword | undefined =
                                 await context.req[userPromiseSymbol];
 
-                            const firstResolve = (() =>
-                                resolve?.(
-                                    parent,
-                                    args,
-                                    context,
-                                    info,
-                                )) as RuleNext;
+                            const rules = [
+                                confirmationRule(context, user),
+                                !disablePermissions && permissionRule(user),
+                                optionalRule(user),
+                                ownershipRule(parent, info, user),
+                            ];
 
                             // rules are lazy
                             // call next one if they passed
-                            const finalResolve = [
-                                confirmationRule(context, user),
-                                optionalRule(user),
-                                ownershipRule(parent, info, user),
-                            ].reduce(
-                                (nextRule, rule) =>
-                                    rule(nextRule, directiveArgs),
-                                firstResolve,
-                            );
+                            const finalResolve = rules
+                                .filter(<T>(x: T | false): x is T => !!x)
+                                .reduce(
+                                    (nextRule: RuleNext, rule) =>
+                                        rule(nextRule, directiveArgs),
+                                    () =>
+                                        resolve?.(parent, args, context, info),
+                                );
 
                             return finalResolve();
                         };

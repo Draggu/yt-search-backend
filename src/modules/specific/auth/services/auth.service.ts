@@ -6,6 +6,7 @@ import { CurrentUser } from 'directives/auth/types';
 import { UserEntity } from 'modules/specific/user/entities/user.entity';
 import { Repository } from 'typeorm';
 import { LoginInput, RegisterInput } from '../dto/auth.input';
+import { UpdatePermissionInput } from '../dto/permissions.input';
 import { TokenService } from './token.service';
 
 @Injectable()
@@ -49,6 +50,30 @@ export class AuthService {
 
     logout(currentUser: CurrentUser, token: string, isName = true) {
         return this.tokenService.destroy(currentUser, token, isName);
+    }
+
+    async changePermissions(
+        currentUser: CurrentUser,
+        { userId, add, remove }: UpdatePermissionInput,
+    ) {
+        assert(
+            currentUser.id !== userId,
+            'user can not modify own permissions',
+        );
+
+        const user = await this.userRepository.findOneOrFail({
+            where: {
+                id: userId,
+            },
+        });
+
+        const permissions = new Set([...user.permissions, ...add]);
+
+        remove.forEach(permissions.delete, permissions);
+
+        user.permissions = [...permissions];
+
+        return this.userRepository.save(user);
     }
 
     resetPassword() {

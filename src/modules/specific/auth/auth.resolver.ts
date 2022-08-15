@@ -1,9 +1,11 @@
 import { Args, Mutation, Resolver } from '@nestjs/graphql';
 import { Auth } from 'directives/auth/decorators/auth.decorator';
 import { Token } from 'directives/auth/decorators/token.decorator';
-import { CurrentUser } from 'directives/auth/types';
+import { CurrentUser, Permissions } from 'directives/auth/types';
 import { RecaptchaV3 } from 'directives/recaptcha-v3/recaptcha-v3.decorator';
+import { UserEntity } from '../user/entities/user.entity';
 import { LoginInput, RegisterInput } from './dto/auth.input';
+import { UpdatePermissionInput } from './dto/permissions.input';
 import { AuthPayload } from './entities/auth.entity';
 import { TokenEntity } from './entities/token.entity';
 import { AuthService } from './services/auth.service';
@@ -13,7 +15,7 @@ export class AuthResolver {
     constructor(private readonly authService: AuthService) {}
 
     @Mutation(() => AuthPayload)
-    // @RecaptchaV3('register')
+    @RecaptchaV3('register')
     register(
         @Args('register') registerInput: RegisterInput,
     ): Promise<AuthPayload> {
@@ -45,5 +47,23 @@ export class AuthResolver {
         @Args('logout') tokenName: string,
     ): Promise<TokenEntity> {
         return this.authService.logout(currentUser, tokenName);
+    }
+
+    @Mutation(() => UserEntity, {
+        description: 'user can not modify own permissions!',
+    })
+    @RecaptchaV3('change-permissions')
+    changePermissions(
+        @Auth({
+            confirmationRequired: true,
+            permissions: [Permissions.MODIFY_PERMISSION],
+        })
+        currentUser: CurrentUser,
+        @Args('permissions') updatePermissionInput: UpdatePermissionInput,
+    ): Promise<UserEntity> {
+        return this.authService.changePermissions(
+            currentUser,
+            updatePermissionInput,
+        );
     }
 }

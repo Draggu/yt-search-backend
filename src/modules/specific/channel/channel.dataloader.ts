@@ -8,7 +8,7 @@ import { ChannelEntity } from './entities/channel.entity';
 export class ChannelContentDataloader extends RelationDataloader(
     ChannelEntity,
     'ytId',
-    'newestContent',
+    'revisions',
 ) {}
 
 @Injectable()

@@ -23,9 +23,4 @@ export class UserResolver {
     ): Promise<UserEntity> {
         return this.userService.update(currentUser, updateUserInput);
     }
-
-    @Mutation(() => UserEntity)
-    removeUser(@Auth() currentUser: CurrentUser): Promise<UserEntity> {
-        return this.userService.remove(currentUser);
-    }
 }

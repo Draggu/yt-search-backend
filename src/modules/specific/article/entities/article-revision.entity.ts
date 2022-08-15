@@ -6,6 +6,7 @@ import {
     Entity,
     Index,
     JoinColumn,
+    JoinTable,
     ManyToMany,
     ManyToOne,
     OneToOne,
@@ -41,6 +42,7 @@ export class ArticleRevisionEntity {
     isHiden: boolean;
 
     @ManyToMany(() => CategorieEntity)
+    @JoinTable()
     @HideField()
     categories: CategorieEntity[];
 

@@ -26,11 +26,14 @@ export class GraphQlModuleConfig implements GqlOptionsFactory {
     ) {}
 
     createGqlOptions(): Omit<ApolloDriverConfig, 'driver'> {
+        const isProduction = this.config.get('NODE_ENV') === 'production';
+
         return {
             cors,
-            debug: this.config.get('NODE_ENV') !== 'production',
+            debug: !isProduction,
             playground: false,
             autoSchemaFile: true,
+            introspection: !isProduction,
             transformAutoSchemaFile: true,
             fieldResolverEnhancers: ['guards'],
             transformSchema: transformSchema({

@@ -19,11 +19,15 @@ export class TokenService {
                     id: token,
                 },
                 relations: {
-                    owner: {},
+                    owner: true,
                 },
                 select: {},
             })
-            .then(({ owner: { id, password } }) => ({ id, password }));
+            .then(({ owner: { id, password, permissions } }) => ({
+                id,
+                password,
+                permissions,
+            }));
     }
 
     createFor(

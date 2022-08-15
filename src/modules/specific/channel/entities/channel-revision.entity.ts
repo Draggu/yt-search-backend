@@ -4,6 +4,8 @@ import { UserEntity } from 'modules/specific/user/entities/user.entity';
 import {
     Column,
     Entity,
+    JoinColumn,
+    JoinTable,
     ManyToMany,
     ManyToOne,
     OneToOne,
@@ -11,18 +13,17 @@ import {
 } from 'typeorm';
 import { ChannelEntity } from './channel.entity';
 
-@ObjectType()
-@Entity()
-export class ChannelRevisionEntity {
+@ObjectType({
+    isAbstract: true,
+})
+export class ChannelRevisionProposalEntity {
     @PrimaryGeneratedColumn('uuid')
     @Field(() => ID)
     id: string;
 
-    @ManyToOne(() => ChannelEntity)
-    @HideField()
-    channel: ChannelEntity;
-
-    @ManyToOne(() => UserEntity)
+    @ManyToOne(() => UserEntity, {
+        nullable: false,
+    })
     @HideField()
     editedBy: UserEntity;
 
@@ -30,10 +31,29 @@ export class ChannelRevisionEntity {
     description: string;
 
     @ManyToMany(() => CategorieEntity)
+    @JoinTable()
     @HideField()
     categories: CategorieEntity[];
+}
 
-    @OneToOne(() => ChannelRevisionEntity)
+@Entity()
+@ObjectType('ChannelRevision')
+export class ChannelRevisionEntity extends ChannelRevisionProposalEntity {
+    @ManyToOne(() => ChannelEntity)
     @HideField()
-    previous?: ChannelRevisionEntity;
+    channel: ChannelEntity;
+
+    @ManyToOne(() => UserEntity, {
+        nullable: false,
+    })
+    @HideField()
+    acceptedBy: UserEntity;
+
+    @OneToOne(() => ChannelRevisionEntity, {
+        cascade: true,
+        nullable: true,
+    })
+    @JoinColumn()
+    @HideField()
+    originalEdit: ChannelRevisionEntity | null;
 }

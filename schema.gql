@@ -23,6 +23,11 @@ directive @auth(
   """if resource is not owned by current user field is nulled"""
   onlyOwn: Boolean = false
   optional: Boolean = false
+  """
+  permissions required to complete action
+  authed user MUST have ALL of these permissions
+  """
+  permissions: [Permissions!] = []
 ) on FIELD_DEFINITION
 
 directive @constraint(contains: String, endsWith: String, exclusiveMax: Float, exclusiveMin: Float, format: String, max: Float, maxLength: Int, min: Float, minLength: Int, multipleOf: Float, notContains: String, pattern: String, startsWith: String, uniqueTypeName: String) on ARGUMENT_DEFINITION | FIELD_DEFINITION | INPUT_FIELD_DEFINITION
@@ -114,8 +119,8 @@ type CategorieEntity {
   parentId: ID
 }
 
-type ChannelEntity {
-  content: ChannelRevisionEntity!
+type Channel {
+  content: [ChannelRevision!]!
   lastSyncWithYT: DateTime!
   name: String!
   opinions: [ChannelOpinion!]!
@@ -128,7 +133,13 @@ type ChannelOpinion {
   id: ID!
   """integer in range 1-10"""
   stars: Int!
-  target: ChannelEntity!
+  target: Channel!
+}
+
+type ChannelProposal {
+  description: String!
+  id: ID!
+  ytId: ID!
 }
 
 input ChannelProposalInput {
@@ -137,7 +148,7 @@ input ChannelProposalInput {
   ytId: ID!
 }
 
-type ChannelRevisionEntity {
+type ChannelRevision {
   categories: [CategorieEntity!]!
   description: String!
   editedBy: UserEntity!
@@ -171,22 +182,41 @@ input LoginInput {
 }
 
 type Mutation {
-  commentArticle(opinion: CreateOpinionInput!, targetIdName: ID!): ArticleOpinion! @auth(optional: true)
-  commentChannel(opinion: CreateOpinionInput!, targetIdName: ID!): ChannelOpinion! @auth(optional: true)
-  commentYoutuber(opinion: CreateOpinionInput!, targetIdName: ID!): YoutuberOpinion! @auth(optional: true)
+  acceptChannelProposal(edit: ChannelProposalInput, id: ID!): Channel! @auth(permissions: [ACCEPT_PROPOSAL])
+  """user can not modify own permissions!"""
+  changePermissions(permissions: UpdatePermissionInput!): UserEntity! @recaptchaV3(actionName: "change-permissions") @auth(confirmationRequired: true, permissions: [MODIFY_PERMISSION])
+  commentArticle(opinion: CreateOpinionInput!, targetIdName: ID!): ArticleOpinion! @auth(optional: true, permissions: [COMMENT])
+  commentChannel(opinion: CreateOpinionInput!, targetIdName: ID!): ChannelOpinion! @auth(optional: true, permissions: [COMMENT])
+  commentYoutuber(opinion: CreateOpinionInput!, targetIdName: ID!): YoutuberOpinion! @auth(optional: true, permissions: [COMMENT])
   createCategorie(createCategorieInput: CreateCategorieInput!): CategorieEntity!
   destroyToken(logout: String!): TokenEntity! @recaptchaV3(actionName: "logout-device") @auth(confirmationRequired: true)
   login(login: LoginInput!): AuthPayload! @recaptchaV3(actionName: "login")
   logout: TokenEntity! @recaptchaV3(actionName: "logout") @auth
-  proposeChannel(proposal: ChannelProposalInput!): ChannelEntity! @auth
+  proposeChannel(proposal: ChannelProposalInput!): ChannelProposal! @auth
   proposeYoutuber(proposal: ProposeYoutuberInput!): YoutuberEntity! @auth
-  register(register: RegisterInput!): AuthPayload!
+  register(register: RegisterInput!): AuthPayload! @recaptchaV3(actionName: "register")
+  rejectChannelProposal(id: ID!): ChannelProposal @auth(permissions: [ACCEPT_PROPOSAL])
   removeCategorie(id: ID!): CategorieEntity!
-  removeUser: UserEntity! @auth
   renameCategorie(updateCategorieInput: UpdateCategorieInput!): CategorieEntity!
   updateArticle(updateArticleInput: UpdateArticleInput!): ArticleEntity! @auth
   updateUser(updateUserInput: UpdateUserInput!): UserEntity! @auth
-  writeArticle(createArticleInput: CreateArticleInput!): ArticleEntity! @auth
+  writeArticle(createArticleInput: CreateArticleInput!): ArticleEntity! @auth(permissions: [WRITE_ARTICLE])
+}
+
+input PageInput {
+  skip: Int = 0 @constraint(min: 0)
+  take: Int = 10 @constraint(exclusiveMin: 0, max: 20)
+}
+
+enum Permissions {
+  ACCEPT_PROPOSAL
+  COMMENT
+  EDIT_ARTICLE
+  HIDE_ARTICLE
+  MODIFY_PERMISSION
+  PROPOSE
+  SHOW_ARTICLE
+  WRITE_ARTICLE
 }
 
 input ProposeYoutuberInput {
@@ -199,7 +229,8 @@ input ProposeYoutuberInput {
 
 type Query {
   article(id: ID!): ArticleEntity
-  channel(ytId: ID!): ChannelEntity
+  channel(ytId: ID!): Channel
+  channelProposals(page: PageInput!, ytId: ID): [ChannelProposal!]! @auth(permissions: [ACCEPT_PROPOSAL])
   """
   categories are returned in flat normalized array
   id defaults to ROOT categorie
@@ -233,6 +264,12 @@ input UpdateCategorieInput {
   name: String!
 }
 
+input UpdatePermissionInput {
+  add: [Permissions!] = []
+  remove: [Permissions!] = []
+  userId: ID!
+}
+
 input UpdateUserInput {
   email: String @constraint(format: "email")
   name: String @constraint(minLength: 3)
@@ -242,7 +279,8 @@ type UserEntity {
   email: String!
   id: ID!
   name: String!
-  password: String!
+  """by default every user receives [COMMENT, PROPOSE]"""
+  permissions: [Permissions!]!
 }
 
 type YoutuberEntity {

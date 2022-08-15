@@ -3,7 +3,7 @@ import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
 import { ChannelOpinionEntity } from './channel-opinion.entity';
 import { ChannelRevisionEntity } from './channel-revision.entity';
 
-@ObjectType()
+@ObjectType('Channel')
 @Entity()
 export class ChannelEntity {
     @PrimaryColumn()
@@ -25,7 +25,7 @@ export class ChannelEntity {
         cascade: true,
     })
     @HideField()
-    newestContent: ChannelRevisionEntity;
+    revisions: ChannelRevisionEntity[];
 
     @OneToMany(() => ChannelOpinionEntity, (opinion) => opinion.target)
     @HideField()

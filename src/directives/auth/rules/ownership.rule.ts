@@ -1,21 +1,14 @@
 import * as assert from 'assert';
-import { GraphQLResolveInfo, isNonNullType } from 'graphql';
+import { GraphQLResolveInfo } from 'graphql';
 import { ownershipKey } from '../consts';
 import {
     AuthProperties,
     CurrentUser,
-    FieldConfig,
     OwnershipMetadata,
     OwnershipTarget,
     Result,
     RuleNext,
 } from '../types';
-
-export const ownershipNullableTypes = (fieldConfig: FieldConfig) => {
-    const { type } = fieldConfig;
-    // all fields that have ownership must be nullable
-    fieldConfig.type = isNonNullType(type) ? type.ofType : type;
-};
 
 export const ownershipRule =
     (parent: Result, info: GraphQLResolveInfo, user?: CurrentUser) =>

@@ -1,13 +1,15 @@
+import { registerEnumType } from '@nestjs/graphql';
 import { Request } from 'express';
 import { GraphQLFieldConfig } from 'graphql';
 
 export interface AuthProperties {
-    optional?: boolean;
-    onlyOwn?: boolean;
-    confirmationRequired?: boolean;
+    optional: boolean;
+    onlyOwn: boolean;
+    confirmationRequired: boolean;
+    permissions: Permissions[];
 }
 
-export enum UserPermissions {
+export enum Permissions {
     PROPOSE = 'PROPOSE',
     COMMENT = 'COMMENT',
     ACCEPT_PROPOSAL = 'ACCEPT_PROPOSAL',
@@ -15,11 +17,16 @@ export enum UserPermissions {
     EDIT_ARTICLE = 'EDIT_ARTICLE',
     HIDE_ARTICLE = 'HIDE_ARTICLE',
     SHOW_ARTICLE = 'SHOW_ARTICLE',
+    MODIFY_PERMISSION = 'MODIFY_PERMISSION',
 }
+
+registerEnumType(Permissions, {
+    name: 'Permissions',
+});
 
 export type CurrentUser = {
     id: string;
-    // permissions: UserPermissions;//TODO
+    permissions: Permissions[];
 };
 
 export type CurrentUserWithPassword = CurrentUser & {

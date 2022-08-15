@@ -10,11 +10,11 @@ import { ChannelEntity } from '../entities/channel.entity';
 
 @Resolver(() => ChannelEntity)
 export class ChannelFieldResolver {
-    @ResolveField(() => ChannelRevisionEntity)
+    @ResolveField(() => [ChannelRevisionEntity])
     content(
         @Parent() channel: ChannelEntity,
         @Dataloader() dataloader: ChannelContentDataloader,
-    ): Promise<ChannelRevisionEntity> {
+    ): Promise<ChannelRevisionEntity[]> {
         return dataloader.load(channel.ytId);
     }
 

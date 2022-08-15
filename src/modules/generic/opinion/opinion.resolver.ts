@@ -8,7 +8,7 @@ import {
     Resolver,
 } from '@nestjs/graphql';
 import { Auth } from 'directives/auth/decorators/auth.decorator';
-import { CurrentUser } from 'directives/auth/types';
+import { CurrentUser, Permissions } from 'directives/auth/types';
 import { Dataloader } from 'modules/infrastructure/dataloader/dataloader.decorator';
 import { UserEntity } from 'modules/specific/user/entities/user.entity';
 import { CreateOpinionInput } from './dto/create-opinion.input';
@@ -42,6 +42,7 @@ export const createOpinionResolver = (
             @Args('opinion') createOpinionInput: CreateOpinionInput,
             @Auth({
                 optional: true,
+                permissions: [Permissions.COMMENT],
             })
             currentUser?: CurrentUser,
         ): Promise<OpinionEntity> {

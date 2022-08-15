@@ -4,6 +4,7 @@ import { UserEntity } from 'modules/specific/user/entities/user.entity';
 import {
     Column,
     Entity,
+    JoinTable,
     ManyToMany,
     ManyToOne,
     OneToOne,
@@ -39,6 +40,7 @@ export class YoutuberRevisionEntity {
     description: string;
 
     @ManyToMany(() => CategorieEntity)
+    @JoinTable()
     @HideField()
     categories: CategorieEntity[];
 

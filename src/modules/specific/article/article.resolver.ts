@@ -1,6 +1,6 @@
 import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { Auth } from 'directives/auth/decorators/auth.decorator';
-import { CurrentUser } from 'directives/auth/types';
+import { CurrentUser, Permissions } from 'directives/auth/types';
 import { RemoveNullsPipe } from 'pipes/remove-nulls.pipe';
 import { ArticleService } from './article.service';
 import { CreateArticleInput, UpdateArticleInput } from './dto/article.input';
@@ -12,7 +12,10 @@ export class ArticleResolver {
 
     @Mutation(() => ArticleEntity)
     writeArticle(
-        @Auth() currentUser: CurrentUser,
+        @Auth({
+            permissions: [Permissions.WRITE_ARTICLE],
+        })
+        currentUser: CurrentUser,
         @Args('createArticleInput') createArticleInput: CreateArticleInput,
     ): Promise<ArticleEntity> {
         return this.articleService.create(currentUser, createArticleInput);
