@@ -8,7 +8,7 @@ import { YoutuberEntity } from './entities/youtuber.entity';
 export class YoutuberContentDataloader extends RelationDataloader(
     YoutuberEntity,
     'id',
-    'newestContent',
+    'revisions',
 ) {}
 
 @Injectable()

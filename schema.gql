@@ -142,12 +142,6 @@ type ChannelProposal {
   ytId: ID!
 }
 
-input ChannelProposalInput {
-  categories: [ID!]!
-  description: String!
-  ytId: ID!
-}
-
 type ChannelRevision {
   categories: [CategorieEntity!]!
   description: String!
@@ -182,7 +176,8 @@ input LoginInput {
 }
 
 type Mutation {
-  acceptChannelProposal(edit: ChannelProposalInput, id: ID!): Channel! @auth(permissions: [ACCEPT_PROPOSAL])
+  acceptChannelProposal(edit: ProposeChannelInput, id: ID!): Channel! @auth(permissions: [ACCEPT_PROPOSAL])
+  acceptYoutuberProposal(edit: ProposeYoutuberInput, id: ID!): YoutuberEntity! @auth(permissions: [ACCEPT_PROPOSAL])
   """user can not modify own permissions!"""
   changePermissions(permissions: UpdatePermissionInput!): UserEntity! @recaptchaV3(actionName: "change-permissions") @auth(confirmationRequired: true, permissions: [MODIFY_PERMISSION])
   commentArticle(opinion: CreateOpinionInput!, targetIdName: ID!): ArticleOpinion! @auth(optional: true, permissions: [COMMENT])
@@ -192,10 +187,11 @@ type Mutation {
   destroyToken(logout: String!): TokenEntity! @recaptchaV3(actionName: "logout-device") @auth(confirmationRequired: true)
   login(login: LoginInput!): AuthPayload! @recaptchaV3(actionName: "login")
   logout: TokenEntity! @recaptchaV3(actionName: "logout") @auth
-  proposeChannel(proposal: ChannelProposalInput!): ChannelProposal! @auth
-  proposeYoutuber(proposal: ProposeYoutuberInput!): YoutuberEntity! @auth
+  proposeChannel(proposal: ProposeChannelInput!): ChannelProposal! @auth
+  proposeYoutuber(proposal: ProposeYoutuberInput!): YoutuberProposal! @auth
   register(register: RegisterInput!): AuthPayload! @recaptchaV3(actionName: "register")
   rejectChannelProposal(id: ID!): ChannelProposal @auth(permissions: [ACCEPT_PROPOSAL])
+  rejectYoutuberProposal(id: ID!): YoutuberProposal @auth(permissions: [ACCEPT_PROPOSAL])
   removeCategorie(id: ID!): CategorieEntity!
   renameCategorie(updateCategorieInput: UpdateCategorieInput!): CategorieEntity!
   updateArticle(updateArticleInput: UpdateArticleInput!): ArticleEntity! @auth
@@ -217,6 +213,12 @@ enum Permissions {
   PROPOSE
   SHOW_ARTICLE
   WRITE_ARTICLE
+}
+
+input ProposeChannelInput {
+  categories: [ID!]!
+  description: String!
+  ytId: ID!
 }
 
 input ProposeYoutuberInput {
@@ -284,7 +286,7 @@ type UserEntity {
 }
 
 type YoutuberEntity {
-  content: YoutuberRevisionEntity!
+  content: [YoutuberRevisionEntity!]!
   id: ID!
   opinions: [YoutuberOpinion!]!
 }
@@ -296,6 +298,14 @@ type YoutuberOpinion {
   """integer in range 1-10"""
   stars: Int!
   target: YoutuberEntity!
+}
+
+type YoutuberProposal {
+  birthday: DateTime
+  description: String!
+  id: ID!
+  name: String!
+  realName: String
 }
 
 type YoutuberRevisionEntity {

@@ -3,7 +3,7 @@ import { PageInput } from 'common/dto/page';
 import { Auth } from 'directives/auth/decorators/auth.decorator';
 import { CurrentUser, Permissions } from 'directives/auth/types';
 import { ChannelService } from './channel.service';
-import { ChannelProposalInput } from './dto/channel-proposal.input';
+import { ProposeChannelInput } from './dto/propose-channel.input';
 import { ChannelProposalEntity } from './entities/channel-proposal.entity';
 import { ChannelEntity } from './entities/channel.entity';
 
@@ -35,7 +35,7 @@ export class ChannelResolver {
     @Mutation(() => ChannelProposalEntity)
     proposeChannel(
         @Auth() currentUser: CurrentUser,
-        @Args('proposal') proposal: ChannelProposalInput,
+        @Args('proposal') proposal: ProposeChannelInput,
     ): Promise<ChannelProposalEntity> {
         return this.channelService.propose(currentUser, proposal);
     }
@@ -60,7 +60,7 @@ export class ChannelResolver {
         })
         currentUser: CurrentUser,
         @Args('id', { type: () => ID }) id: string,
-        @Args('edit', { nullable: true }) edit?: ChannelProposalInput,
+        @Args('edit', { nullable: true }) edit?: ProposeChannelInput,
     ): Promise<ChannelEntity> {
         return this.channelService.acceptProposal(currentUser, id, edit);
     }

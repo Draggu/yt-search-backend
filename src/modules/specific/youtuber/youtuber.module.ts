@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { OpinionModule } from 'modules/generic/opinion/opinion.module';
 import { YoutuberOpinionEntity } from './entities/youtuber-opinion.entity';
+import { YoutuberProposalEntity } from './entities/youtuber-proposal.entity';
 import { YoutuberRevisionEntity } from './entities/youtuber-revision.entity';
 import { YoutuberEntity } from './entities/youtuber.entity';
 import { YoutuberOpinionFieldResolver } from './fields-resolvers/youtuber-opinion.field-resolver';
@@ -19,6 +20,7 @@ import { YoutuberService } from './youtuber.service';
         TypeOrmModule.forFeature([
             YoutuberEntity,
             YoutuberRevisionEntity,
+            YoutuberProposalEntity,
             YoutuberOpinionEntity,
         ]),
     ],

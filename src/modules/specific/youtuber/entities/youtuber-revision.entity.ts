@@ -4,6 +4,7 @@ import { UserEntity } from 'modules/specific/user/entities/user.entity';
 import {
     Column,
     Entity,
+    JoinColumn,
     JoinTable,
     ManyToMany,
     ManyToOne,
@@ -12,16 +13,13 @@ import {
 } from 'typeorm';
 import { YoutuberEntity } from './youtuber.entity';
 
-@Entity()
-@ObjectType()
-export class YoutuberRevisionEntity {
+@ObjectType({
+    isAbstract: true,
+})
+export class YoutuberRevisionProposalEntity {
     @PrimaryGeneratedColumn('uuid')
     @Field(() => ID)
     id: string;
-
-    @ManyToOne(() => YoutuberEntity)
-    @HideField()
-    youtuber: YoutuberEntity;
 
     @ManyToOne(() => UserEntity)
     @HideField()
@@ -43,8 +41,25 @@ export class YoutuberRevisionEntity {
     @JoinTable()
     @HideField()
     categories: CategorieEntity[];
-
-    @OneToOne(() => YoutuberRevisionEntity)
+}
+@Entity()
+@ObjectType()
+export class YoutuberRevisionEntity extends YoutuberRevisionProposalEntity {
+    @ManyToOne(() => YoutuberEntity)
     @HideField()
-    previous?: YoutuberRevisionEntity;
+    youtuber: YoutuberEntity;
+
+    @ManyToOne(() => UserEntity, {
+        nullable: false,
+    })
+    @HideField()
+    acceptedBy: UserEntity;
+
+    @OneToOne(() => YoutuberRevisionEntity, {
+        cascade: true,
+        nullable: true,
+    })
+    @JoinColumn()
+    @HideField()
+    originalEdit: YoutuberRevisionEntity | null;
 }

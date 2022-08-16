@@ -4,7 +4,7 @@ import { PageInput } from 'common/dto/page';
 import { CurrentUser } from 'directives/auth/types';
 import { Youtube } from 'modules/infrastructure/youtube-api/youtube-api.module';
 import { Repository } from 'typeorm';
-import { ChannelProposalInput } from './dto/channel-proposal.input';
+import { ProposeChannelInput } from './dto/propose-channel.input';
 import { ChannelProposalEntity } from './entities/channel-proposal.entity';
 import { ChannelRevisionEntity } from './entities/channel-revision.entity';
 import { ChannelEntity } from './entities/channel.entity';
@@ -50,7 +50,7 @@ export class ChannelService {
     async acceptProposal(
         currentUser: CurrentUser,
         id: string,
-        edit?: ChannelProposalInput,
+        edit?: ProposeChannelInput,
     ) {
         const {
             id: proposalId,
@@ -104,7 +104,7 @@ export class ChannelService {
 
     async propose(
         currentUser: CurrentUser,
-        { categories, description, ytId }: ChannelProposalInput,
+        { categories, description, ytId }: ProposeChannelInput,
     ) {
         // check if channel exists
         await this.fetchChannelFromYT(ytId);

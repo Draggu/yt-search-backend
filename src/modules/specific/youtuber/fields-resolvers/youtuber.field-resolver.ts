@@ -10,11 +10,11 @@ import {
 
 @Resolver(() => YoutuberEntity)
 export class YoutuberFieldResolver {
-    @ResolveField(() => YoutuberRevisionEntity)
+    @ResolveField(() => [YoutuberRevisionEntity])
     content(
         @Parent() youtuber: YoutuberEntity,
         @Dataloader() dataloader: YoutuberContentDataloader,
-    ): Promise<YoutuberRevisionEntity> {
+    ): Promise<YoutuberRevisionEntity[]> {
         return dataloader.load(youtuber.id);
     }
 
