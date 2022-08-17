@@ -21,23 +21,19 @@ export interface OpinionResolverOptions {
     targetIdName: string;
 }
 
-let i = 0;
-
-export const createOpinionResolver = (
+export const OpinionResolver = (
     entity: Type,
     { methodName, targetIdName }: OpinionResolverOptions,
 ) => {
-    @Resolver(() => entity)
+    @Resolver(() => entity, {
+        isAbstract: true,
+    })
     class OpinionResolver {
         constructor(private readonly opinionService: OpinionService) {}
 
         @Mutation(() => entity, { name: methodName })
         createOpinion(
-            //FIXME
-            // name must be same across all calls of createOpinionResolver
-            // otherwise targetId is undefined
-            // idk why
-            @Args({ type: () => ID, name: 'targetIdName' })
+            @Args({ type: () => ID, name: targetIdName })
             targetId: string,
             @Args('opinion') createOpinionInput: CreateOpinionInput,
             @Auth({

@@ -1,8 +1,8 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Type } from '@nestjs/common';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { RelationDataloader } from 'common/dataloaders/relation.dataloader';
 import { EntityManager } from 'typeorm';
-import { Opinion, OpinionConfig, OpinionTargetKey } from './consts';
+import { Opinion, OpinionTargetKey } from './consts';
 import { OpinionEntity } from './entities/opinion.entity';
 
 @Injectable()
@@ -20,11 +20,11 @@ export class OpinionTargetDataloader extends RelationDataloader<
 >('placeholder for entity', 'id', 'target') {
     constructor(
         @Inject(OpinionTargetKey)
-        readonly config: OpinionConfig,
+        readonly target: Type<Opinion>,
         @InjectEntityManager() readonly entityManager: EntityManager,
     ) {
         super(entityManager);
 
-        this.Entity = config.target;
+        this.Entity = target;
     }
 }

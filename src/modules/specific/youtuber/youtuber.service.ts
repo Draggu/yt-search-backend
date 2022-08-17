@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import { PageInput } from 'common/dto/page';
 import { CurrentUser } from 'directives/auth/types';
-import { Repository } from 'typeorm';
+import { socialMedia2Map } from 'modules/generic/social-media/helpers/to-map';
+import { EntityManager, Repository } from 'typeorm';
 import { ProposeYoutuberInput } from './dto/propose-youtuber.input';
 import { YoutuberProposalEntity } from './entities/youtuber-proposal.entity';
 import { YoutuberRevisionEntity } from './entities/youtuber-revision.entity';
@@ -15,8 +16,7 @@ export class YoutuberService {
         private readonly youtuberRepository: Repository<YoutuberEntity>,
         @InjectRepository(YoutuberProposalEntity)
         private readonly youtuberProposalRepository: Repository<YoutuberProposalEntity>,
-        @InjectRepository(YoutuberRevisionEntity)
-        private readonly youtuberRevisionRepository: Repository<YoutuberRevisionEntity>,
+        @InjectEntityManager() private readonly entityManager: EntityManager,
     ) {}
 
     findOne(id: string) {
@@ -48,11 +48,7 @@ export class YoutuberService {
         id: string,
         edit?: ProposeYoutuberInput,
     ) {
-        const {
-            id: proposalId,
-            isRejected: _,
-            ...revisionData
-        } = await this.youtuberProposalRepository.findOneOrFail({
+        const proposal = await this.youtuberProposalRepository.findOneOrFail({
             where: { id },
             relations: {
                 editedBy: true,
@@ -60,9 +56,12 @@ export class YoutuberService {
             },
         });
 
+        const { youtuberId, id: _, isRejected: __, ...revisionData } = proposal;
+
         const revision = edit
             ? {
                   ...edit,
+                  socialMedia: socialMedia2Map(edit.socialMedia),
                   categories: edit.categories.map((id) => ({ id })),
                   originalEdit: {
                       ...revisionData,
@@ -76,26 +75,41 @@ export class YoutuberService {
                   originalEdit: null,
               };
 
-        const youtuber = await this.youtuberRepository.save({
-            id,
-        });
+        return this.entityManager.transaction(async (manager) => {
+            const orCreate = (youtuber: YoutuberEntity | null) =>
+                youtuber ||
+                manager.save(YoutuberEntity, this.youtuberRepository.create());
 
-        await this.youtuberRevisionRepository.save({
-            ...revision,
-            youtuber,
-        });
+            const youtuber = youtuberId
+                ? await manager
+                      .findOne(YoutuberEntity, {
+                          where: {
+                              id: youtuberId,
+                          },
+                      })
+                      .then(orCreate)
+                : await orCreate(null);
 
-        return youtuber;
+            await manager.save(YoutuberRevisionEntity, {
+                ...revision,
+                youtuber,
+            });
+
+            await manager.remove(YoutuberProposalEntity, proposal);
+
+            return youtuber;
+        });
     }
 
     propose(
         currentUser: CurrentUser,
-        { categories, ...propose }: ProposeYoutuberInput,
+        { categories, socialMedia, ...propose }: ProposeYoutuberInput,
     ) {
         return this.youtuberProposalRepository.save({
             ...propose,
             editedBy: currentUser,
             categories: categories.map((id) => ({ id })),
+            socialMedia: socialMedia2Map(socialMedia),
         });
     }
 }

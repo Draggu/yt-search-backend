@@ -1,4 +1,9 @@
 import { Field, HideField, ID, ObjectType } from '@nestjs/graphql';
+import {
+    SocialMedia,
+    SocialMediaObject,
+} from 'modules/generic/social-media/dto/social-media.input';
+import { socialMediaSerializeMiddleware } from 'modules/generic/social-media/middlewares/serialize.middleware';
 import { CategorieEntity } from 'modules/specific/categorie/entities/categorie.entity';
 import { UserEntity } from 'modules/specific/user/entities/user.entity';
 import {
@@ -36,6 +41,12 @@ export class YoutuberRevisionProposalEntity {
 
     @Column()
     description: string;
+
+    @Column('simple-json')
+    @Field(() => [SocialMediaObject], {
+        middleware: [socialMediaSerializeMiddleware],
+    })
+    socialMedia: Record<SocialMedia, string>;
 
     @ManyToMany(() => CategorieEntity)
     @JoinTable()

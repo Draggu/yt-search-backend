@@ -1,12 +1,6 @@
 import { Field, HideField, ID, Int, ObjectType } from '@nestjs/graphql';
 import { UserEntity } from 'modules/specific/user/entities/user.entity';
-import {
-    Check,
-    Column,
-    ManyToOne,
-    PrimaryGeneratedColumn,
-    RelationId,
-} from 'typeorm';
+import { Check, Column, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @ObjectType({
     isAbstract: true,
@@ -34,8 +28,4 @@ export class OpinionEntity {
     @ManyToOne(() => UserEntity)
     @HideField()
     author?: UserEntity;
-
-    @RelationId((opinion: OpinionEntity) => opinion.author)
-    @HideField()
-    authorId?: string;
 }

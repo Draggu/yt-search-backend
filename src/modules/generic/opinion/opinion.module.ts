@@ -1,32 +1,20 @@
 import { DynamicModule, Module, Type } from '@nestjs/common';
-import { Opinion, OpinionConfig, OpinionTargetKey } from './consts';
-import {
-    createOpinionResolver,
-    OpinionResolverOptions,
-} from './opinion.resolver';
+import { Opinion, OpinionTargetKey } from './consts';
 import { OpinionService } from './opinion.service';
 
-@Module({})
+@Module({
+    providers: [OpinionService],
+    exports: [OpinionService],
+})
 export class OpinionModule {
-    static forFeature<T extends Opinion>(
-        target: Type<T>,
-        idKey: keyof T,
-        resolverOptions: OpinionResolverOptions,
-    ): DynamicModule {
-        const config: OpinionConfig<T> = {
-            target,
-            idKey,
-        };
-
+    static forFeature(target: Type<Opinion>): DynamicModule {
         return {
             module: OpinionModule,
             providers: [
-                createOpinionResolver(target, resolverOptions),
                 {
                     provide: OpinionTargetKey,
-                    useValue: config,
+                    useValue: target,
                 },
-                OpinionService,
             ],
         };
     }

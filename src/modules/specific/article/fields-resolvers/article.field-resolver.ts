@@ -28,11 +28,11 @@ export class ArticleFieldResolver {
         return dataloader.load(article.id);
     }
 
-    @ResolveField(() => ArticleRevisionEntity)
+    @ResolveField(() => [ArticleRevisionEntity])
     content(
         @Parent() article: ArticleEntity,
         @Dataloader() dataloader: ArticleContentDataloader,
-    ): Promise<ArticleRevisionEntity> {
+    ): Promise<ArticleRevisionEntity[]> {
         return dataloader.load(article.id);
     }
 }

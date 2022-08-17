@@ -17,10 +17,7 @@ import { ChannelFieldResolver } from './fields-resolvers/channel.field-resolver'
 
 @Module({
     imports: [
-        OpinionModule.forFeature(ChannelOpinionEntity, 'id', {
-            methodName: 'commentChannel',
-            targetIdName: 'channelId',
-        }),
+        OpinionModule.forFeature(ChannelOpinionEntity),
         TypeOrmModule.forFeature([
             ChannelEntity,
             ChannelProposalEntity,

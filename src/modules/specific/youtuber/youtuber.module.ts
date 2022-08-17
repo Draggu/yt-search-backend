@@ -13,10 +13,7 @@ import { YoutuberService } from './youtuber.service';
 
 @Module({
     imports: [
-        OpinionModule.forFeature(YoutuberOpinionEntity, 'id', {
-            methodName: 'commentYoutuber',
-            targetIdName: 'youtuberId',
-        }),
+        OpinionModule.forFeature(YoutuberOpinionEntity),
         TypeOrmModule.forFeature([
             YoutuberEntity,
             YoutuberRevisionEntity,

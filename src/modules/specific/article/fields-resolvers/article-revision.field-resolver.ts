@@ -5,7 +5,6 @@ import { UserEntity } from 'modules/specific/user/entities/user.entity';
 import {
     ArticleRevisionCategoriesDataloader,
     ArticleRevisionEditorDataloader,
-    ArticleRevisionPreviousDataloader,
 } from '../article.dataloader';
 import { ArticleRevisionEntity } from '../entities/article-revision.entity';
 
@@ -25,13 +24,5 @@ export class ArticleRevisionFieldResolver {
         @Dataloader() dataloader: ArticleRevisionCategoriesDataloader,
     ): Promise<CategorieEntity[]> {
         return dataloader.load(articleRevision.id);
-    }
-
-    @ResolveField(() => ArticleRevisionEntity, { nullable: true })
-    previous(
-        @Parent() revision: ArticleRevisionEntity,
-        @Dataloader() dataloader: ArticleRevisionPreviousDataloader,
-    ): Promise<ArticleRevisionEntity | undefined | null> {
-        return dataloader.load(revision.id);
     }
 }

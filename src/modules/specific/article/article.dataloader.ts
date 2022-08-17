@@ -15,7 +15,7 @@ export class ArticleAuthorDataloader extends RelationDataloader(
 export class ArticleContentDataloader extends RelationDataloader(
     ArticleEntity,
     'id',
-    'newestContent',
+    'revisions',
 ) {}
 
 @Injectable()
@@ -35,11 +35,4 @@ export class ArticleRevisionEditorDataloader extends RelationDataloader(
     ArticleRevisionEntity,
     'id',
     'editedBy',
-) {}
-
-@Injectable()
-export class ArticleRevisionPreviousDataloader extends RelationDataloader(
-    ArticleRevisionEntity,
-    'id',
-    'previous',
 ) {}

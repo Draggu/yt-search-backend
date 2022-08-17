@@ -5,9 +5,9 @@ import {
     Entity,
     ManyToOne,
     OneToMany,
-    OneToOne,
     PrimaryGeneratedColumn,
 } from 'typeorm';
+import { ArticleHideEntity } from './article-hide.entity';
 import { ArticleOpinionEntity } from './article-opinion.entity';
 import { ArticleRevisionEntity } from './article-revision.entity';
 
@@ -27,16 +27,18 @@ export class ArticleEntity {
     @HideField()
     author: UserEntity;
 
-    @OneToOne(
-        () => ArticleRevisionEntity,
-        (revision) => revision.articleNewestContentBackward,
-        {
-            cascade: true,
-            nullable: false,
-        },
-    )
+    @OneToMany(() => ArticleRevisionEntity, (revision) => revision.article, {
+        cascade: true,
+        nullable: false,
+    })
     @HideField()
-    newestContent: ArticleRevisionEntity;
+    revisions: ArticleRevisionEntity[];
+
+    @OneToMany(() => ArticleHideEntity, (hide) => hide.article, {
+        nullable: false,
+    })
+    @HideField()
+    hides: ArticleHideEntity[];
 
     @OneToMany(() => ArticleOpinionEntity, (opinion) => opinion.target)
     @HideField()

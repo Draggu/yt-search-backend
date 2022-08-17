@@ -1,15 +1,15 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Type } from '@nestjs/common';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { CurrentUser } from 'directives/auth/types';
 import { EntityManager } from 'typeorm';
-import { OpinionConfig, OpinionTargetKey } from './consts';
+import { Opinion, OpinionTargetKey } from './consts';
 import { CreateOpinionInput } from './dto/create-opinion.input';
 
 @Injectable()
 export class OpinionService {
     constructor(
         @Inject(OpinionTargetKey)
-        private readonly config: OpinionConfig,
+        private readonly target: Type<Opinion>,
         @InjectEntityManager() private readonly entityManager: EntityManager,
     ) {}
 
@@ -18,11 +18,11 @@ export class OpinionService {
         targetId: string,
         currentUser?: CurrentUser,
     ) {
-        return this.entityManager.getRepository(this.config.target).save({
+        return this.entityManager.getRepository(this.target).save({
             ...createOpinionInput,
             author: currentUser,
             target: {
-                [this.config.idKey]: targetId,
+                id: targetId,
             },
         });
     }

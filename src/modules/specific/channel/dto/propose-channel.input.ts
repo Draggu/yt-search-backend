@@ -1,4 +1,5 @@
 import { Field, ID, InputType } from '@nestjs/graphql';
+import { SocialMediaObject } from 'modules/generic/social-media/dto/social-media.input';
 
 @InputType()
 export class ProposeChannelInput {
@@ -9,4 +10,7 @@ export class ProposeChannelInput {
 
     @Field(() => [ID])
     categories: string[];
+
+    @Field(() => [SocialMediaObject])
+    socialMedia: SocialMediaObject[];
 }

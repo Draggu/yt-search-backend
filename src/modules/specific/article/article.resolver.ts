@@ -23,19 +23,38 @@ export class ArticleResolver {
 
     @Query(() => ArticleEntity, {
         nullable: true,
+        description: `if authed user permissions include ${Permissions.EDIT_ARTICLE} hiden articles will be shown`,
     })
     article(
         @Args('id', { type: () => ID }) id: string,
+        @Auth({
+            optional: true,
+        })
+        currentUser?: CurrentUser,
     ): Promise<ArticleEntity | null> {
-        return this.articleService.findOne(id);
+        return this.articleService.findOne(id, currentUser);
     }
 
     @Mutation(() => ArticleEntity)
     updateArticle(
-        @Auth() currentUser: CurrentUser,
+        @Auth({
+            permissions: [Permissions.EDIT_ARTICLE],
+        })
+        currentUser: CurrentUser,
         @Args('updateArticleInput', RemoveNullsPipe)
         updateArticleInput: UpdateArticleInput,
     ): Promise<ArticleEntity> {
         return this.articleService.update(currentUser, updateArticleInput);
+    }
+
+    @Mutation(() => ArticleEntity)
+    changeArticleVisibility(
+        @Auth({
+            permissions: [Permissions.EDIT_ARTICLE],
+        })
+        currentUser: CurrentUser,
+        @Args('id', { type: () => ID }) id: string,
+    ): Promise<ArticleEntity> {
+        return this.articleService.changeVisibility(currentUser, id);
     }
 }

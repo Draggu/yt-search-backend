@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import { PageInput } from 'common/dto/page';
 import { CurrentUser } from 'directives/auth/types';
+import { socialMedia2Map } from 'modules/generic/social-media/helpers/to-map';
 import { Youtube } from 'modules/infrastructure/youtube-api/youtube-api.module';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import { ProposeChannelInput } from './dto/propose-channel.input';
 import { ChannelProposalEntity } from './entities/channel-proposal.entity';
 import { ChannelRevisionEntity } from './entities/channel-revision.entity';
@@ -16,8 +17,7 @@ export class ChannelService {
         private readonly channelRepository: Repository<ChannelEntity>,
         @InjectRepository(ChannelProposalEntity)
         private readonly channelProposalRepository: Repository<ChannelProposalEntity>,
-        @InjectRepository(ChannelRevisionEntity)
-        private readonly channelRevisionRepository: Repository<ChannelRevisionEntity>,
+        @InjectEntityManager() private readonly entityManager: EntityManager,
         private readonly youtube: Youtube,
     ) {}
 
@@ -52,12 +52,7 @@ export class ChannelService {
         id: string,
         edit?: ProposeChannelInput,
     ) {
-        const {
-            id: proposalId,
-            ytId,
-            isRejected: _,
-            ...revisionData
-        } = await this.channelProposalRepository.findOneOrFail({
+        const proposal = await this.channelProposalRepository.findOneOrFail({
             where: { id },
             relations: {
                 editedBy: true,
@@ -65,9 +60,12 @@ export class ChannelService {
             },
         });
 
+        const { ytId, id: _, isRejected: __, ...revisionData } = proposal;
+
         const revision = edit
             ? {
                   ...edit,
+                  socialMedia: socialMedia2Map(edit.socialMedia),
                   categories: edit.categories.map((id) => ({ id })),
                   originalEdit: {
                       ...revisionData,
@@ -81,30 +79,38 @@ export class ChannelService {
                   originalEdit: null,
               };
 
-        const channel =
-            (await this.channelRepository.findOne({
-                where: {
-                    ytId,
-                },
-            })) ||
-            (await this.channelRepository.save({
-                ytId,
-                name: await this.fetchChannelFromYT(ytId).then(
-                    ({ title }) => title!,
-                ),
-            }));
+        return this.entityManager.transaction(async (manager) => {
+            const channel = await manager
+                .findOne(ChannelEntity, {
+                    where: {
+                        ytId,
+                    },
+                })
+                .then(
+                    async (channel) =>
+                        channel ||
+                        manager.save(ChannelEntity, {
+                            ytId,
+                            name: await this.fetchChannelFromYT(ytId).then(
+                                ({ title }) => title!,
+                            ),
+                        }),
+                );
 
-        await this.channelRevisionRepository.save({
-            ...revision,
-            channel,
+            await manager.save(ChannelRevisionEntity, {
+                ...revision,
+                channel,
+            });
+
+            await manager.remove(ChannelProposalEntity, proposal);
+
+            return channel;
         });
-
-        return channel;
     }
 
     async propose(
         currentUser: CurrentUser,
-        { categories, description, ytId }: ProposeChannelInput,
+        { categories, description, ytId, socialMedia }: ProposeChannelInput,
     ) {
         // check if channel exists
         await this.fetchChannelFromYT(ytId);
@@ -114,6 +120,7 @@ export class ChannelService {
             description,
             editedBy: currentUser,
             ytId,
+            socialMedia: socialMedia2Map(socialMedia),
         });
     }
 

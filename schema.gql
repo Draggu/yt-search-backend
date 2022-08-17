@@ -40,7 +40,7 @@ directive @recaptchaV3(actionName: String!) on FIELD_DEFINITION
 
 type ArticleEntity {
   author: UserEntity!
-  content: ArticleRevisionEntity!
+  content: [ArticleRevisionEntity!]!
   createdAt: DateTime!
   id: ID!
   opinions: [ArticleOpinion!]!
@@ -61,8 +61,6 @@ type ArticleRevisionEntity {
   editedAt: DateTime!
   editedBy: UserEntity!
   id: ID!
-  isHiden: Boolean!
-  previous: ArticleRevisionEntity
 }
 
 type AuthPayload {
@@ -139,6 +137,7 @@ type ChannelOpinion {
 type ChannelProposal {
   description: String!
   id: ID!
+  socialMedia: [SocialMediaEntity!]!
   ytId: ID!
 }
 
@@ -147,6 +146,7 @@ type ChannelRevision {
   description: String!
   editedBy: UserEntity!
   id: ID!
+  socialMedia: [SocialMediaEntity!]!
 }
 
 input CreateArticleInput {
@@ -178,11 +178,12 @@ input LoginInput {
 type Mutation {
   acceptChannelProposal(edit: ProposeChannelInput, id: ID!): Channel! @auth(permissions: [ACCEPT_PROPOSAL])
   acceptYoutuberProposal(edit: ProposeYoutuberInput, id: ID!): YoutuberEntity! @auth(permissions: [ACCEPT_PROPOSAL])
+  changeArticleVisibility(id: ID!): ArticleEntity! @auth(permissions: [EDIT_ARTICLE])
   """user can not modify own permissions!"""
   changePermissions(permissions: UpdatePermissionInput!): UserEntity! @recaptchaV3(actionName: "change-permissions") @auth(confirmationRequired: true, permissions: [MODIFY_PERMISSION])
-  commentArticle(opinion: CreateOpinionInput!, targetIdName: ID!): ArticleOpinion! @auth(optional: true, permissions: [COMMENT])
-  commentChannel(opinion: CreateOpinionInput!, targetIdName: ID!): ChannelOpinion! @auth(optional: true, permissions: [COMMENT])
-  commentYoutuber(opinion: CreateOpinionInput!, targetIdName: ID!): YoutuberOpinion! @auth(optional: true, permissions: [COMMENT])
+  commentArticle(articleId: ID!, opinion: CreateOpinionInput!): ArticleOpinion! @auth(optional: true, permissions: [COMMENT])
+  commentChannel(channelId: ID!, opinion: CreateOpinionInput!): ChannelOpinion! @auth(optional: true, permissions: [COMMENT])
+  commentYoutuber(opinion: CreateOpinionInput!, youtuberId: ID!): YoutuberOpinion! @auth(optional: true, permissions: [COMMENT])
   createCategorie(createCategorieInput: CreateCategorieInput!): CategorieEntity!
   destroyToken(logout: String!): TokenEntity! @recaptchaV3(actionName: "logout-device") @auth(confirmationRequired: true)
   login(login: LoginInput!): AuthPayload! @recaptchaV3(actionName: "login")
@@ -194,7 +195,7 @@ type Mutation {
   rejectYoutuberProposal(id: ID!): YoutuberProposal @auth(permissions: [ACCEPT_PROPOSAL])
   removeCategorie(id: ID!): CategorieEntity!
   renameCategorie(updateCategorieInput: UpdateCategorieInput!): CategorieEntity!
-  updateArticle(updateArticleInput: UpdateArticleInput!): ArticleEntity! @auth
+  updateArticle(updateArticleInput: UpdateArticleInput!): ArticleEntity! @auth(permissions: [EDIT_ARTICLE])
   updateUser(updateUserInput: UpdateUserInput!): UserEntity! @auth
   writeArticle(createArticleInput: CreateArticleInput!): ArticleEntity! @auth(permissions: [WRITE_ARTICLE])
 }
@@ -208,16 +209,15 @@ enum Permissions {
   ACCEPT_PROPOSAL
   COMMENT
   EDIT_ARTICLE
-  HIDE_ARTICLE
   MODIFY_PERMISSION
   PROPOSE
-  SHOW_ARTICLE
   WRITE_ARTICLE
 }
 
 input ProposeChannelInput {
   categories: [ID!]!
   description: String!
+  socialMedia: [SocialMediaInput!]!
   ytId: ID!
 }
 
@@ -227,10 +227,15 @@ input ProposeYoutuberInput {
   description: String!
   name: String!
   realName: String
+  socialMedia: [SocialMediaInput!]!
+  youtuberId: ID
 }
 
 type Query {
-  article(id: ID!): ArticleEntity
+  """
+  if authed user permissions include EDIT_ARTICLE hiden articles will be shown
+  """
+  article(id: ID!): ArticleEntity @auth(optional: true)
   channel(ytId: ID!): Channel
   channelProposals(page: PageInput!, ytId: ID): [ChannelProposal!]! @auth(permissions: [ACCEPT_PROPOSAL])
   """
@@ -249,6 +254,24 @@ input RegisterInput {
   password: String! @constraint(minLength: 8)
 }
 
+enum SocialMedia {
+  FACEBOOK
+  INSTAGRAM
+  SNAPCHAT
+  TIKTOK
+  TWITTER
+}
+
+type SocialMediaEntity {
+  kind: SocialMedia!
+  value: String!
+}
+
+input SocialMediaInput {
+  kind: SocialMedia!
+  value: String!
+}
+
 type TokenEntity {
   name: String!
   owner: UserEntity!
@@ -258,7 +281,6 @@ type TokenEntity {
 input UpdateArticleInput {
   content: String
   id: ID!
-  isHiden: Boolean
 }
 
 input UpdateCategorieInput {
@@ -306,6 +328,8 @@ type YoutuberProposal {
   id: ID!
   name: String!
   realName: String
+  socialMedia: [SocialMediaEntity!]!
+  youtuberId: String
 }
 
 type YoutuberRevisionEntity {
@@ -316,4 +340,5 @@ type YoutuberRevisionEntity {
   id: ID!
   name: String!
   realName: String
+  socialMedia: [SocialMediaEntity!]!
 }

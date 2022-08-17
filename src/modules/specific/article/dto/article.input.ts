@@ -9,5 +9,4 @@ export class CreateArticleInput {
 export class UpdateArticleInput extends PartialType(CreateArticleInput) {
     @Field(() => ID)
     id: string;
-    isHiden?: boolean;
 }
