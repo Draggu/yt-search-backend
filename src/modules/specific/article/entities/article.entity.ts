@@ -35,6 +35,7 @@ export class ArticleEntity {
     revisions: ArticleRevisionEntity[];
 
     @OneToMany(() => ArticleHideEntity, (hide) => hide.article, {
+        cascade: true,
         nullable: false,
     })
     @HideField()

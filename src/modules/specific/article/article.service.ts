@@ -26,6 +26,11 @@ export class ArticleService {
                     editedBy: currentUser,
                 }),
             ],
+            hides: [
+                this.articleHideRepository.create({
+                    editedBy: currentUser,
+                }),
+            ],
             author: currentUser,
         });
     }

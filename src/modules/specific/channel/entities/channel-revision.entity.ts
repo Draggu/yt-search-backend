@@ -15,6 +15,7 @@ import {
     ManyToOne,
     OneToOne,
     PrimaryGeneratedColumn,
+    RelationId,
 } from 'typeorm';
 import { ChannelEntity } from './channel.entity';
 
@@ -31,6 +32,11 @@ export class ChannelRevisionProposalEntity {
     })
     @HideField()
     editedBy: UserEntity;
+
+    @Column({
+        default: () => 'NOW()',
+    })
+    editedAt: Date;
 
     @Column()
     description: string;
@@ -51,8 +57,12 @@ export class ChannelRevisionProposalEntity {
 @ObjectType('ChannelRevision')
 export class ChannelRevisionEntity extends ChannelRevisionProposalEntity {
     @ManyToOne(() => ChannelEntity)
+    @JoinColumn()
     @HideField()
     channel: ChannelEntity;
+
+    @RelationId((revision: ChannelRevisionEntity) => revision.channel)
+    channelId: string;
 
     @ManyToOne(() => UserEntity, {
         nullable: false,

@@ -10,6 +10,7 @@ import {
     ManyToMany,
     ManyToOne,
     PrimaryGeneratedColumn,
+    RelationId,
 } from 'typeorm';
 import { ArticleEntity } from './article.entity';
 
@@ -24,6 +25,9 @@ export class ArticleRevisionEntity {
     @JoinColumn()
     @HideField()
     article: ArticleEntity;
+
+    @RelationId((revision: ArticleRevisionEntity) => revision.article)
+    articleId: string;
 
     @Column({
         default: () => 'NOW()',

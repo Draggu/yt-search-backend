@@ -1,4 +1,5 @@
-import { Parent, ResolveField, Resolver } from '@nestjs/graphql';
+import { Args, Parent, ResolveField, Resolver } from '@nestjs/graphql';
+import { PageInput } from 'common/dto/page';
 import { Dataloader } from 'modules/infrastructure/dataloader/dataloader.decorator';
 import {
     ChannelContentDataloader,
@@ -13,16 +14,18 @@ export class ChannelFieldResolver {
     @ResolveField(() => [ChannelRevisionEntity])
     content(
         @Parent() channel: ChannelEntity,
+        @Args('page') page: PageInput,
         @Dataloader() dataloader: ChannelContentDataloader,
     ): Promise<ChannelRevisionEntity[]> {
-        return dataloader.load(channel.ytId);
+        return dataloader.load({ id: channel.ytId, page });
     }
 
     @ResolveField(() => [ChannelOpinionEntity])
     opinions(
         @Parent() channel: ChannelEntity,
+        @Args('page') page: PageInput,
         @Dataloader() dataloader: ChannelOpinionsDataloader,
     ): Promise<ChannelOpinionEntity[]> {
-        return dataloader.load(channel.ytId);
+        return dataloader.load({ id: channel.ytId, page });
     }
 }

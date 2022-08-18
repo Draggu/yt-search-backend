@@ -1,6 +1,6 @@
 import { HideField, ObjectType } from '@nestjs/graphql';
 import { OpinionEntity } from 'modules/generic/opinion/entities/opinion.entity';
-import { Entity, ManyToOne } from 'typeorm';
+import { Entity, ManyToOne, RelationId } from 'typeorm';
 import { YoutuberEntity } from './youtuber.entity';
 
 @Entity()
@@ -9,4 +9,7 @@ export class YoutuberOpinionEntity extends OpinionEntity {
     @ManyToOne(() => YoutuberEntity)
     @HideField()
     target: YoutuberEntity;
+
+    @RelationId((opinion: YoutuberOpinionEntity) => opinion.target)
+    targetId: string;
 }

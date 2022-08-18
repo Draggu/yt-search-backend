@@ -1,4 +1,5 @@
-import { Parent, ResolveField, Resolver } from '@nestjs/graphql';
+import { Args, Parent, ResolveField, Resolver } from '@nestjs/graphql';
+import { PageInput } from 'common/dto/page';
 import { Dataloader } from 'modules/infrastructure/dataloader/dataloader.decorator';
 import { UserEntity } from 'modules/specific/user/entities/user.entity';
 import {
@@ -23,16 +24,18 @@ export class ArticleFieldResolver {
     @ResolveField(() => [ArticleOpinionEntity])
     opinions(
         @Parent() article: ArticleEntity,
+        @Args('page') page: PageInput,
         @Dataloader() dataloader: ArticleOpinionsDataloader,
     ): Promise<ArticleOpinionEntity[]> {
-        return dataloader.load(article.id);
+        return dataloader.load({ id: article.id, page });
     }
 
     @ResolveField(() => [ArticleRevisionEntity])
     content(
         @Parent() article: ArticleEntity,
+        @Args('page') page: PageInput,
         @Dataloader() dataloader: ArticleContentDataloader,
     ): Promise<ArticleRevisionEntity[]> {
-        return dataloader.load(article.id);
+        return dataloader.load({ id: article.id, page });
     }
 }

@@ -17,6 +17,11 @@ export class OpinionEntity {
     content?: string;
 
     @Column({
+        default: () => 'NOW()',
+    })
+    createdAt: Date;
+
+    @Column({
         nullable: false,
         type: 'smallint',
     })

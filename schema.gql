@@ -40,22 +40,25 @@ directive @recaptchaV3(actionName: String!) on FIELD_DEFINITION
 
 type ArticleEntity {
   author: UserEntity!
-  content: [ArticleRevisionEntity!]!
+  content(page: PageInput!): [ArticleRevisionEntity!]!
   createdAt: DateTime!
   id: ID!
-  opinions: [ArticleOpinion!]!
+  opinions(page: PageInput!): [ArticleOpinion!]!
 }
 
 type ArticleOpinion {
   author: UserEntity
   content: String
+  createdAt: DateTime!
   id: ID!
   """integer in range 1-10"""
   stars: Int!
   target: ArticleEntity!
+  targetId: String!
 }
 
 type ArticleRevisionEntity {
+  articleId: String!
   categories: [CategorieEntity!]!
   content: String!
   editedAt: DateTime!
@@ -118,24 +121,27 @@ type CategorieEntity {
 }
 
 type Channel {
-  content: [ChannelRevision!]!
+  content(page: PageInput!): [ChannelRevision!]!
   lastSyncWithYT: DateTime!
   name: String!
-  opinions: [ChannelOpinion!]!
+  opinions(page: PageInput!): [ChannelOpinion!]!
   ytId: ID!
 }
 
 type ChannelOpinion {
   author: UserEntity
   content: String
+  createdAt: DateTime!
   id: ID!
   """integer in range 1-10"""
   stars: Int!
   target: Channel!
+  targetId: String!
 }
 
 type ChannelProposal {
   description: String!
+  editedAt: DateTime!
   id: ID!
   socialMedia: [SocialMediaEntity!]!
   ytId: ID!
@@ -143,7 +149,9 @@ type ChannelProposal {
 
 type ChannelRevision {
   categories: [CategorieEntity!]!
+  channelId: String!
   description: String!
+  editedAt: DateTime!
   editedBy: UserEntity!
   id: ID!
   socialMedia: [SocialMediaEntity!]!
@@ -308,23 +316,26 @@ type UserEntity {
 }
 
 type YoutuberEntity {
-  content: [YoutuberRevisionEntity!]!
+  content(page: PageInput!): [YoutuberRevisionEntity!]!
   id: ID!
-  opinions: [YoutuberOpinion!]!
+  opinions(page: PageInput!): [YoutuberOpinion!]!
 }
 
 type YoutuberOpinion {
   author: UserEntity
   content: String
+  createdAt: DateTime!
   id: ID!
   """integer in range 1-10"""
   stars: Int!
   target: YoutuberEntity!
+  targetId: String!
 }
 
 type YoutuberProposal {
   birthday: DateTime
   description: String!
+  editedAt: DateTime!
   id: ID!
   name: String!
   realName: String
@@ -336,9 +347,11 @@ type YoutuberRevisionEntity {
   birthday: DateTime
   categories: [CategorieEntity!]!
   description: String!
+  editedAt: DateTime!
   editedBy: UserEntity!
   id: ID!
   name: String!
   realName: String
   socialMedia: [SocialMediaEntity!]!
+  youtuberId: String!
 }
