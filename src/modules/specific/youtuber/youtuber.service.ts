@@ -90,14 +90,14 @@ export class YoutuberService {
                       .then(orCreate)
                 : await orCreate(null);
 
-            await manager.save(YoutuberRevisionEntity, {
+            await manager.remove(YoutuberProposalEntity, proposal);
+
+            youtuber.lastRevision = await manager.save(YoutuberRevisionEntity, {
                 ...revision,
                 youtuber,
             });
 
-            await manager.remove(YoutuberProposalEntity, proposal);
-
-            return youtuber;
+            return manager.save(YoutuberEntity, youtuber);
         });
     }
 

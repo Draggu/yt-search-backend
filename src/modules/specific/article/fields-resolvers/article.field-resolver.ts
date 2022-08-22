@@ -2,10 +2,12 @@ import { Args, Parent, ResolveField, Resolver } from '@nestjs/graphql';
 import { PageInput } from 'common/dto/page';
 import { Dataloader } from 'modules/infrastructure/dataloader/dataloader.decorator';
 import { UserEntity } from 'modules/specific/user/entities/user.entity';
+import { Skip1MorePipe } from 'pipes/skip-1-more.pipe';
 import {
     ArticleAuthorDataloader,
     ArticleContentDataloader,
     ArticleOpinionsDataloader,
+    ArticleRevisionsDataloader,
 } from '../article.dataloader';
 import { ArticleOpinionEntity } from '../entities/article-opinion.entity';
 import { ArticleRevisionEntity } from '../entities/article-revision.entity';
@@ -31,11 +33,19 @@ export class ArticleFieldResolver {
     }
 
     @ResolveField(() => [ArticleRevisionEntity])
-    content(
+    revisions(
         @Parent() article: ArticleEntity,
-        @Args('page') page: PageInput,
-        @Dataloader() dataloader: ArticleContentDataloader,
+        @Args('page', Skip1MorePipe) page: PageInput,
+        @Dataloader() dataloader: ArticleRevisionsDataloader,
     ): Promise<ArticleRevisionEntity[]> {
         return dataloader.load({ id: article.id, page });
+    }
+
+    @ResolveField(() => ArticleRevisionEntity)
+    content(
+        @Parent() article: ArticleEntity,
+        @Dataloader() dataloader: ArticleContentDataloader,
+    ): Promise<ArticleRevisionEntity> {
+        return dataloader.load(article.id);
     }
 }

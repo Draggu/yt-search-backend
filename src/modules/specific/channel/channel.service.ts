@@ -97,27 +97,27 @@ export class ChannelService {
                         }),
                 );
 
-            await manager.save(ChannelRevisionEntity, {
+            await manager.remove(ChannelProposalEntity, proposal);
+
+            channel.lastRevision = await manager.save(ChannelRevisionEntity, {
                 ...revision,
                 channel,
             });
 
-            await manager.remove(ChannelProposalEntity, proposal);
-
-            return channel;
+            return manager.save(ChannelEntity, channel);
         });
     }
 
     async propose(
         currentUser: CurrentUser,
-        { categories, description, ytId, socialMedia }: ProposeChannelInput,
+        { categories, content, ytId, socialMedia }: ProposeChannelInput,
     ) {
         // check if channel exists
         await this.fetchChannelFromYT(ytId);
 
         return this.channelProposalRepository.save({
             categories: categories.map((id) => ({ id })),
-            description,
+            content,
             editedBy: currentUser,
             ytId,
             socialMedia: socialMedia2Map(socialMedia),

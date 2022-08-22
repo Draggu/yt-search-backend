@@ -40,10 +40,11 @@ directive @recaptchaV3(actionName: String!) on FIELD_DEFINITION
 
 type ArticleEntity {
   author: UserEntity!
-  content(page: PageInput!): [ArticleRevisionEntity!]!
+  content: ArticleRevisionEntity!
   createdAt: DateTime!
   id: ID!
   opinions(page: PageInput!): [ArticleOpinion!]!
+  revisions(page: PageInput!): [ArticleRevisionEntity!]!
 }
 
 type ArticleOpinion {
@@ -64,6 +65,7 @@ type ArticleRevisionEntity {
   editedAt: DateTime!
   editedBy: UserEntity!
   id: ID!
+  title: String!
 }
 
 type AuthPayload {
@@ -121,10 +123,11 @@ type CategorieEntity {
 }
 
 type Channel {
-  content(page: PageInput!): [ChannelRevision!]!
+  content: ChannelRevision!
   lastSyncWithYT: DateTime!
   name: String!
   opinions(page: PageInput!): [ChannelOpinion!]!
+  revisions(page: PageInput!): [ChannelRevision!]!
   ytId: ID!
 }
 
@@ -140,7 +143,7 @@ type ChannelOpinion {
 }
 
 type ChannelProposal {
-  description: String!
+  content: String!
   editedAt: DateTime!
   id: ID!
   socialMedia: [SocialMediaEntity!]!
@@ -150,7 +153,7 @@ type ChannelProposal {
 type ChannelRevision {
   categories: [CategorieEntity!]!
   channelId: String!
-  description: String!
+  content: String!
   editedAt: DateTime!
   editedBy: UserEntity!
   id: ID!
@@ -158,7 +161,8 @@ type ChannelRevision {
 }
 
 input CreateArticleInput {
-  content: String!
+  content: String! @constraint(maxLength: 10000)
+  title: String!
 }
 
 input CreateCategorieInput {
@@ -224,7 +228,7 @@ enum Permissions {
 
 input ProposeChannelInput {
   categories: [ID!]!
-  description: String!
+  content: String! @constraint(maxLength: 10000)
   socialMedia: [SocialMediaInput!]!
   ytId: ID!
 }
@@ -232,7 +236,7 @@ input ProposeChannelInput {
 input ProposeYoutuberInput {
   birthday: DateTime
   categories: [ID!]!
-  description: String!
+  content: String! @constraint(maxLength: 10000)
   name: String!
   realName: String
   socialMedia: [SocialMediaInput!]!
@@ -246,6 +250,7 @@ type Query {
   article(id: ID!): ArticleEntity @auth(optional: true)
   channel(ytId: ID!): Channel
   channelProposals(page: PageInput!, ytId: ID): [ChannelProposal!]! @auth(permissions: [ACCEPT_PROPOSAL])
+  search(page: PageInput!, search: SearchInput!): [SearchResult!]!
   """
   categories are returned in flat normalized array
   id defaults to ROOT categorie
@@ -261,6 +266,53 @@ input RegisterInput {
   name: String! @constraint(minLength: 3)
   password: String! @constraint(minLength: 8)
 }
+
+enum SearchFieldComparison {
+  HIGHER
+  LOWER
+}
+
+input SearchFieldDateInput {
+  comparison: SearchFieldComparison!
+  value: DateTime!
+}
+
+input SearchFieldNumberInput {
+  comparison: SearchFieldComparison!
+  value: Float!
+}
+
+input SearchFieldsInput {
+  author: [ID!]
+  birthday: SearchFieldDateInput
+  categorieNames: [String!]
+  content: String
+  createdAt: SearchFieldDateInput
+  editedAt: SearchFieldDateInput
+  lastSyncWithYT: SearchFieldDateInput
+  name: String
+  opinions: SearchFieldNumberInput
+  realName: String
+  ytId: [ID!]
+}
+
+input SearchIncludeInput {
+  articles: Boolean = true
+  channels: Boolean = true
+  youtubers: Boolean = true
+}
+
+input SearchInput {
+  fields: SearchFieldsInput!
+  include: SearchIncludeInput!
+  """
+  this is used as generic "search across"
+  use it if filters are not fitting
+  """
+  query: String
+}
+
+union SearchResult = ArticleEntity | Channel | YoutuberEntity
 
 enum SocialMedia {
   FACEBOOK
@@ -287,8 +339,9 @@ type TokenEntity {
 }
 
 input UpdateArticleInput {
-  content: String
+  content: String @constraint(maxLength: 10000)
   id: ID!
+  title: String
 }
 
 input UpdateCategorieInput {
@@ -316,9 +369,10 @@ type UserEntity {
 }
 
 type YoutuberEntity {
-  content(page: PageInput!): [YoutuberRevisionEntity!]!
+  content: YoutuberRevisionEntity!
   id: ID!
   opinions(page: PageInput!): [YoutuberOpinion!]!
+  revisions(page: PageInput!): [YoutuberRevisionEntity!]!
 }
 
 type YoutuberOpinion {
@@ -334,7 +388,7 @@ type YoutuberOpinion {
 
 type YoutuberProposal {
   birthday: DateTime
-  description: String!
+  content: String!
   editedAt: DateTime!
   id: ID!
   name: String!
@@ -346,7 +400,7 @@ type YoutuberProposal {
 type YoutuberRevisionEntity {
   birthday: DateTime
   categories: [CategorieEntity!]!
-  description: String!
+  content: String!
   editedAt: DateTime!
   editedBy: UserEntity!
   id: ID!

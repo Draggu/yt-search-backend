@@ -1,5 +1,12 @@
 import { Field, HideField, ID, ObjectType } from '@nestjs/graphql';
-import { Column, Entity, OneToMany, PrimaryColumn } from 'typeorm';
+import {
+    Column,
+    Entity,
+    JoinColumn,
+    OneToMany,
+    OneToOne,
+    PrimaryColumn,
+} from 'typeorm';
 import { ChannelOpinionEntity } from './channel-opinion.entity';
 import { ChannelRevisionEntity } from './channel-revision.entity';
 
@@ -20,6 +27,11 @@ export class ChannelEntity {
 
     @Column()
     name: string;
+
+    @OneToOne(() => ChannelRevisionEntity)
+    @JoinColumn()
+    @HideField()
+    lastRevision: ChannelRevisionEntity;
 
     @OneToMany(() => ChannelRevisionEntity, (revision) => revision.channel, {
         cascade: true,

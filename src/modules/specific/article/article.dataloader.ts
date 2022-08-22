@@ -14,7 +14,7 @@ export class ArticleAuthorDataloader extends RelationDataloader(
 ) {}
 
 @Injectable()
-export class ArticleContentDataloader extends RelationPaginatedDataloader(
+export class ArticleRevisionsDataloader extends RelationPaginatedDataloader(
     ArticleRevisionEntity,
     'articleId',
     {
@@ -43,4 +43,11 @@ export class ArticleRevisionEditorDataloader extends RelationDataloader(
     ArticleRevisionEntity,
     'id',
     'editedBy',
+) {}
+
+@Injectable()
+export class ArticleContentDataloader extends RelationDataloader(
+    ArticleEntity,
+    'id',
+    'lastRevision',
 ) {}

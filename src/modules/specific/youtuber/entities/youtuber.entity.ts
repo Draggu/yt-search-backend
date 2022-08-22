@@ -1,5 +1,11 @@
 import { Field, HideField, ID, ObjectType } from '@nestjs/graphql';
-import { Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+    Entity,
+    JoinColumn,
+    OneToMany,
+    OneToOne,
+    PrimaryGeneratedColumn,
+} from 'typeorm';
 import { YoutuberOpinionEntity } from './youtuber-opinion.entity';
 import { YoutuberRevisionEntity } from './youtuber-revision.entity';
 
@@ -9,6 +15,11 @@ export class YoutuberEntity {
     @PrimaryGeneratedColumn('uuid')
     @Field(() => ID)
     id: string;
+
+    @OneToOne(() => YoutuberRevisionEntity)
+    @JoinColumn()
+    @HideField()
+    lastRevision: YoutuberRevisionEntity;
 
     @OneToMany(() => YoutuberRevisionEntity, (revision) => revision.youtuber)
     @HideField()

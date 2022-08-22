@@ -3,8 +3,10 @@ import { UserEntity } from 'modules/specific/user/entities/user.entity';
 import {
     Column,
     Entity,
+    JoinColumn,
     ManyToOne,
     OneToMany,
+    OneToOne,
     PrimaryGeneratedColumn,
 } from 'typeorm';
 import { ArticleHideEntity } from './article-hide.entity';
@@ -26,6 +28,11 @@ export class ArticleEntity {
     @ManyToOne(() => UserEntity)
     @HideField()
     author: UserEntity;
+
+    @OneToOne(() => ArticleRevisionEntity)
+    @JoinColumn()
+    @HideField()
+    lastRevision: ArticleRevisionEntity;
 
     @OneToMany(() => ArticleRevisionEntity, (revision) => revision.article, {
         cascade: true,

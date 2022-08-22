@@ -48,4 +48,7 @@ export class ArticleRevisionEntity {
         synchronize: false,
     })
     content: string;
+
+    @Column()
+    title: string;
 }

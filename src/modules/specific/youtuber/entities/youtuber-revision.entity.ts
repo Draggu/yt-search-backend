@@ -46,7 +46,7 @@ export class YoutuberRevisionProposalEntity {
     birthday?: Date;
 
     @Column()
-    description: string;
+    content: string;
 
     @Column('simple-json')
     @Field(() => [SocialMediaObject], {

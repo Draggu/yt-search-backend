@@ -12,6 +12,7 @@ import { UserModule } from 'modules/specific/user/user.module';
 import { YoutuberModule } from 'modules/specific/youtuber/youtuber.module';
 import { ArticleModule } from './modules/specific/article/article.module';
 import { CategorieModule } from './modules/specific/categorie/categorie.module';
+import { SearchModule } from './modules/specific/search/search.module';
 
 @Module({
     imports: [
@@ -30,6 +31,7 @@ import { CategorieModule } from './modules/specific/categorie/categorie.module';
         ChannelModule,
         ArticleModule,
         CategorieModule,
+        SearchModule,
     ],
 })
 export class AppModule {}

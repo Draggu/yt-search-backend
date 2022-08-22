@@ -17,7 +17,14 @@ export const RecaptchaV3Guard = (action: string) => {
                 `https://www.google.com/recaptcha/api/siteverify?response=${token}&secret=${key}`,
             ).then((res) => res.json());
 
-            return googleRes.success && googleRes.action === action;
+            const disableCaptcha =
+                this.config.get('DISABLE_CAPTCHA') &&
+                this.config.get('NODE_ENV') !== 'production';
+
+            return (
+                disableCaptcha ||
+                (googleRes.success && googleRes.action === action)
+            );
         }
     }
 

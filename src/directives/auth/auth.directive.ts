@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { GqlDirectiveFactory } from 'config/graphql.module.config';
 import { Request } from 'express';
 import { isNonNullType } from 'graphql';
+import { filterBoolean } from 'helpers/filter-boolean';
 import { SchemaTransform } from 'helpers/schema/transform';
 import { TokenService } from 'modules/specific/auth/services/token.service';
 import { currentUserSymbol, tokenSymbol, userPromiseSymbol } from './consts';
@@ -103,7 +104,7 @@ export class AuthDirective implements GqlDirectiveFactory {
                             // rules are lazy
                             // call next one if they passed
                             const finalResolve = rules
-                                .filter(<T>(x: T | false): x is T => !!x)
+                                .filter(filterBoolean)
                                 .reduce(
                                     (nextRule: RuleNext, rule) =>
                                         rule(nextRule, directiveArgs),

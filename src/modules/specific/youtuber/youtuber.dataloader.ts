@@ -4,9 +4,10 @@ import { RelationDataloader } from 'common/dataloaders/relation.dataloader';
 import { CategoriesDataloader } from 'modules/specific/categorie/categories.dataloader';
 import { YoutuberOpinionEntity } from './entities/youtuber-opinion.entity';
 import { YoutuberRevisionEntity } from './entities/youtuber-revision.entity';
+import { YoutuberEntity } from './entities/youtuber.entity';
 
 @Injectable()
-export class YoutuberContentDataloader extends RelationPaginatedDataloader(
+export class YoutuberRevisionsDataloader extends RelationPaginatedDataloader(
     YoutuberRevisionEntity,
     'youtuberId',
     {
@@ -35,4 +36,10 @@ export class YoutuberRevisionEditorDataloader extends RelationDataloader(
     YoutuberRevisionEntity,
     'id',
     'editedBy',
+) {}
+@Injectable()
+export class YoutuberContentDataloader extends RelationDataloader(
+    YoutuberEntity,
+    'id',
+    'lastRevision',
 ) {}

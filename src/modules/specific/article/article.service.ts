@@ -89,13 +89,20 @@ export class ArticleService {
                 this.newestPart(id),
             );
 
-        await this.articleRevisionRepository.save({
-            ...newestRevision,
-            ...updateArticleInput,
-            editedBy: currentUser,
-            article: newestRevision.article,
-        });
+        return this.articleRevisionRepository.manager.transaction(
+            async (manager) => {
+                newestRevision.article.lastRevision = await manager.save(
+                    ArticleRevisionEntity,
+                    {
+                        ...newestRevision,
+                        ...updateArticleInput,
+                        editedBy: currentUser,
+                        article: newestRevision.article,
+                    },
+                );
 
-        return newestRevision.article;
+                return manager.save(ArticleEntity, newestRevision.article);
+            },
+        );
     }
 }
