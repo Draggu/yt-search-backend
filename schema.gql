@@ -65,6 +65,7 @@ type ArticleRevisionEntity {
   editedAt: DateTime!
   editedBy: UserEntity!
   id: ID!
+  mentions: MentionEntity!
   title: String!
 }
 
@@ -157,10 +158,16 @@ type ChannelRevision {
   editedAt: DateTime!
   editedBy: UserEntity!
   id: ID!
+  mentions: MentionEntity!
   socialMedia: [SocialMediaEntity!]!
 }
 
 input CreateArticleInput {
+  """
+  this field will be treated as MARKDOWN
+  All links with href in following format will be treated as @mention
+  format: /^mention:/(user|article|youtuber|channel)/([0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12})$/
+  """
   content: String! @constraint(maxLength: 10000)
   title: String!
 }
@@ -185,6 +192,13 @@ input LoginInput {
   deviceName: String!
   email: String! @constraint(format: "email")
   password: String! @constraint(minLength: 8)
+}
+
+type MentionEntity {
+  articles: [ArticleEntity!]!
+  channels: [Channel!]!
+  users: [UserEntity!]!
+  youtubers: [YoutuberEntity!]!
 }
 
 type Mutation {
@@ -228,6 +242,11 @@ enum Permissions {
 
 input ProposeChannelInput {
   categories: [ID!]!
+  """
+  this field will be treated as MARKDOWN
+  All links with href in following format will be treated as @mention
+  format: /^mention:/(user|article|youtuber|channel)/([0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12})$/
+  """
   content: String! @constraint(maxLength: 10000)
   socialMedia: [SocialMediaInput!]!
   ytId: ID!
@@ -236,6 +255,11 @@ input ProposeChannelInput {
 input ProposeYoutuberInput {
   birthday: DateTime
   categories: [ID!]!
+  """
+  this field will be treated as MARKDOWN
+  All links with href in following format will be treated as @mention
+  format: /^mention:/(user|article|youtuber|channel)/([0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12})$/
+  """
   content: String! @constraint(maxLength: 10000)
   name: String!
   realName: String
@@ -250,7 +274,10 @@ type Query {
   article(id: ID!): ArticleEntity @auth(optional: true)
   channel(ytId: ID!): Channel
   channelProposals(page: PageInput!, ytId: ID): [ChannelProposal!]! @auth(permissions: [ACCEPT_PROPOSAL])
-  search(page: PageInput!, search: SearchInput!): [SearchResult!]!
+  """
+  if authed user permissions include EDIT_ARTICLE hiden articles will be shown
+  """
+  search(page: PageInput!, search: SearchInput!): [SearchResult!]! @auth(optional: true)
   """
   categories are returned in flat normalized array
   id defaults to ROOT categorie
@@ -339,6 +366,11 @@ type TokenEntity {
 }
 
 input UpdateArticleInput {
+  """
+  this field will be treated as MARKDOWN
+  All links with href in following format will be treated as @mention
+  format: /^mention:/(user|article|youtuber|channel)/([0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12})$/
+  """
   content: String @constraint(maxLength: 10000)
   id: ID!
   title: String
@@ -404,6 +436,7 @@ type YoutuberRevisionEntity {
   editedAt: DateTime!
   editedBy: UserEntity!
   id: ID!
+  mentions: MentionEntity!
   name: String!
   realName: String
   socialMedia: [SocialMediaEntity!]!

@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { MarkdownMentionModule } from 'modules/generic/markdown-mention/markdown-mention.module';
 import { OpinionModule } from 'modules/generic/opinion/opinion.module';
 import { ArticleResolver } from './article.resolver';
 import { ArticleService } from './article.service';
@@ -13,6 +14,7 @@ import { ArticleFieldResolver } from './fields-resolvers/article.field-resolver'
 
 @Module({
     imports: [
+        MarkdownMentionModule,
         OpinionModule.forFeature(ArticleOpinionEntity),
         TypeOrmModule.forFeature([
             ArticleEntity,

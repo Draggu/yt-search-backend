@@ -3,6 +3,7 @@ import { Auth } from 'directives/auth/decorators/auth.decorator';
 import { CurrentUser, Permissions } from 'directives/auth/types';
 import { RemoveNullsPipe } from 'pipes/remove-nulls.pipe';
 import { ArticleService } from './article.service';
+import { seeHidenArticlesDescription } from './docs';
 import { CreateArticleInput, UpdateArticleInput } from './dto/article.input';
 import { ArticleEntity } from './entities/article.entity';
 
@@ -23,7 +24,7 @@ export class ArticleResolver {
 
     @Query(() => ArticleEntity, {
         nullable: true,
-        description: `if authed user permissions include ${Permissions.EDIT_ARTICLE} hiden articles will be shown`,
+        description: seeHidenArticlesDescription,
     })
     article(
         @Args('id', { type: () => ID }) id: string,
@@ -31,7 +32,7 @@ export class ArticleResolver {
             optional: true,
         })
         currentUser?: CurrentUser,
-    ): Promise<ArticleEntity | null> {
+    ): Promise<ArticleEntity | null | undefined> {
         return this.articleService.findOne(id, currentUser);
     }
 

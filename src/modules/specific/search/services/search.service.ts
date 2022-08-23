@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { PageInput } from 'common/dto/page';
+import { CurrentUser } from 'directives/auth/types';
 import { filterBoolean } from 'helpers/filter-boolean';
+import { canSeeHidenArticle } from 'modules/specific/article/helpers/can-see-hidden';
 import { DataSource } from 'typeorm';
 import { ArticleEntity } from '../../article/entities/article.entity';
 import { ChannelEntity } from '../../channel/entities/channel.entity';
@@ -30,39 +32,48 @@ export class SearchService {
     search(
         { fields, include, query }: SearchInput,
         page: PageInput,
+        currentUser?: CurrentUser,
     ): Promise<SearchResult[]> {
-        const queryBuilders = [
+        const articleQb =
             include.articles &&
-                this.queryService.unionPartQb(
-                    fields,
-                    articleSelect,
-                    ArticleEntity,
-                    'targetId',
-                    articleColumns,
-                    query,
-                ),
+            this.queryService.unionPartQb(
+                fields,
+                articleSelect,
+                ArticleEntity,
+                'targetId',
+                articleColumns,
+                query,
+            );
+        const channelQb =
             include.channels &&
-                this.queryService.unionPartQb(
-                    fields,
-                    channelSelect,
-                    ChannelEntity,
-                    'targetYtId',
-                    channelColumns,
-                    query,
-                ),
+            this.queryService.unionPartQb(
+                fields,
+                channelSelect,
+                ChannelEntity,
+                'targetYtId',
+                channelColumns,
+                query,
+            );
+        const youtuberQb =
             include.youtubers &&
-                this.queryService.unionPartQb(
-                    fields,
-                    youtuberSelect,
-                    YoutuberEntity,
-                    'targetId',
-                    youtuberColumns,
-                    query,
-                ),
-        ].filter(filterBoolean);
+            this.queryService.unionPartQb(
+                fields,
+                youtuberSelect,
+                YoutuberEntity,
+                'targetId',
+                youtuberColumns,
+                query,
+            );
 
-        const [unionQuery, parameters] =
-            this.queryService.createUnion(queryBuilders);
+        if (articleQb && (!currentUser || !canSeeHidenArticle(currentUser))) {
+            articleQb
+                .leftJoin('main.hides', 'hide')
+                .andWhere('"isHiden" = false');
+        }
+
+        const [unionQuery, parameters] = this.queryService.createUnion(
+            [articleQb, channelQb, youtuberQb].filter(filterBoolean),
+        );
 
         const qb = this.dataSource
             .createQueryBuilder()

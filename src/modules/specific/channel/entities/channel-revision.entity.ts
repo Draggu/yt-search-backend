@@ -1,4 +1,5 @@
 import { Field, HideField, ID, ObjectType } from '@nestjs/graphql';
+import { MentionsList } from 'modules/generic/markdown-mention/types';
 import {
     SocialMedia,
     SocialMediaObject,
@@ -40,6 +41,10 @@ export class ChannelRevisionProposalEntity {
 
     @Column()
     content: string;
+
+    @Column('simple-json')
+    @HideField()
+    mentions: MentionsList;
 
     @Column('simple-json')
     @Field(() => [SocialMediaObject], {

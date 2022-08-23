@@ -5,4 +5,4 @@ import { MarkdownMentionService } from './markdown-mention.service';
     providers: [MarkdownMentionService],
     exports: [MarkdownMentionService],
 })
-export class MarkdownModule {}
+export class MarkdownMentionModule {}

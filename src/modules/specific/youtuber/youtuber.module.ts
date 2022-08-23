@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { MarkdownMentionModule } from 'modules/generic/markdown-mention/markdown-mention.module';
 import { OpinionModule } from 'modules/generic/opinion/opinion.module';
 import { YoutuberOpinionEntity } from './entities/youtuber-opinion.entity';
 import { YoutuberProposalEntity } from './entities/youtuber-proposal.entity';
@@ -20,6 +21,7 @@ import { YoutuberService } from './youtuber.service';
             YoutuberProposalEntity,
             YoutuberOpinionEntity,
         ]),
+        MarkdownMentionModule,
     ],
     providers: [
         YoutuberResolver,

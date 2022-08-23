@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { MarkdownMentionModule } from 'modules/generic/markdown-mention/markdown-mention.module';
 import { OpinionModule } from 'modules/generic/opinion/opinion.module';
 import { YoutubeAPI } from 'modules/infrastructure/youtube-api/youtube-api.module';
 import { ChannelResolver } from './channel.resolver';
@@ -26,6 +27,7 @@ import { ChannelFieldResolver } from './fields-resolvers/channel.field-resolver'
             ChannelOpinionEntity,
         ]),
         YoutubeAPI,
+        MarkdownMentionModule,
     ],
     providers: [
         ChannelResolver,

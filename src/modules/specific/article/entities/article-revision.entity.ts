@@ -1,4 +1,5 @@
 import { Field, HideField, ID, ObjectType } from '@nestjs/graphql';
+import { MentionsList } from 'modules/generic/markdown-mention/types';
 import { CategorieEntity } from 'modules/specific/categorie/entities/categorie.entity';
 import { UserEntity } from 'modules/specific/user/entities/user.entity';
 import {
@@ -51,4 +52,8 @@ export class ArticleRevisionEntity {
 
     @Column()
     title: string;
+
+    @Column('simple-json')
+    @HideField()
+    mentions: MentionsList;
 }

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import { PageInput } from 'common/dto/page';
 import { CurrentUser } from 'directives/auth/types';
+import { MarkdownMentionService } from 'modules/generic/markdown-mention/markdown-mention.service';
 import { socialMedia2Map } from 'modules/generic/social-media/helpers/to-map';
 import { EntityManager, Repository } from 'typeorm';
 import { ProposeYoutuberInput } from './dto/propose-youtuber.input';
@@ -17,6 +18,7 @@ export class YoutuberService {
         @InjectRepository(YoutuberProposalEntity)
         private readonly youtuberProposalRepository: Repository<YoutuberProposalEntity>,
         @InjectEntityManager() private readonly entityManager: EntityManager,
+        private readonly markdownMentionService: MarkdownMentionService,
     ) {}
 
     findOne(id: string) {
@@ -61,6 +63,9 @@ export class YoutuberService {
         const revision = edit
             ? {
                   ...edit,
+                  mentions: await this.markdownMentionService.getMentions(
+                      edit.content,
+                  ),
                   socialMedia: socialMedia2Map(edit.socialMedia),
                   categories: edit.categories.map((id) => ({ id })),
                   originalEdit: {
@@ -101,7 +106,7 @@ export class YoutuberService {
         });
     }
 
-    propose(
+    async propose(
         currentUser: CurrentUser,
         { categories, socialMedia, ...propose }: ProposeYoutuberInput,
     ) {
@@ -110,6 +115,9 @@ export class YoutuberService {
             editedBy: currentUser,
             categories: categories.map((id) => ({ id })),
             socialMedia: socialMedia2Map(socialMedia),
+            mentions: await this.markdownMentionService.getMentions(
+                propose.content,
+            ),
         });
     }
 }

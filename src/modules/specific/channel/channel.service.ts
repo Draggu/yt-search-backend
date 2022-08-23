@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import { PageInput } from 'common/dto/page';
 import { CurrentUser } from 'directives/auth/types';
+import { MarkdownMentionService } from 'modules/generic/markdown-mention/markdown-mention.service';
 import { socialMedia2Map } from 'modules/generic/social-media/helpers/to-map';
 import { Youtube } from 'modules/infrastructure/youtube-api/youtube-api.module';
 import { EntityManager, Repository } from 'typeorm';
@@ -19,6 +20,7 @@ export class ChannelService {
         private readonly channelProposalRepository: Repository<ChannelProposalEntity>,
         @InjectEntityManager() private readonly entityManager: EntityManager,
         private readonly youtube: Youtube,
+        private readonly markdownMentionService: MarkdownMentionService,
     ) {}
 
     findOne(ytId: string) {
@@ -65,6 +67,9 @@ export class ChannelService {
         const revision = edit
             ? {
                   ...edit,
+                  mentions: await this.markdownMentionService.getMentions(
+                      edit.content,
+                  ),
                   socialMedia: socialMedia2Map(edit.socialMedia),
                   categories: edit.categories.map((id) => ({ id })),
                   originalEdit: {
@@ -121,6 +126,7 @@ export class ChannelService {
             editedBy: currentUser,
             ytId,
             socialMedia: socialMedia2Map(socialMedia),
+            mentions: await this.markdownMentionService.getMentions(content),
         });
     }
 

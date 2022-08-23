@@ -1,11 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CurrentUser, Permissions } from 'directives/auth/types';
+import { CurrentUser } from 'directives/auth/types';
+import { MarkdownMentionService } from 'modules/generic/markdown-mention/markdown-mention.service';
 import { Repository } from 'typeorm';
 import { CreateArticleInput, UpdateArticleInput } from './dto/article.input';
 import { ArticleHideEntity } from './entities/article-hide.entity';
 import { ArticleRevisionEntity } from './entities/article-revision.entity';
 import { ArticleEntity } from './entities/article.entity';
+import { canSeeHidenArticle } from './helpers/can-see-hidden';
 
 @Injectable()
 export class ArticleService {
@@ -16,14 +18,21 @@ export class ArticleService {
         private readonly articleHideRepository: Repository<ArticleHideEntity>,
         @InjectRepository(ArticleRevisionEntity)
         private readonly articleRevisionRepository: Repository<ArticleRevisionEntity>,
+        private readonly markdownMentionService: MarkdownMentionService,
     ) {}
 
-    create(currentUser: CurrentUser, createArticleInput: CreateArticleInput) {
+    async create(
+        currentUser: CurrentUser,
+        createArticleInput: CreateArticleInput,
+    ) {
         return this.articleRepository.save({
             revisions: [
                 this.articleRevisionRepository.create({
                     ...createArticleInput,
                     editedBy: currentUser,
+                    mentions: await this.markdownMentionService.getMentions(
+                        createArticleInput.content,
+                    ),
                 }),
             ],
             hides: [
@@ -66,18 +75,30 @@ export class ArticleService {
     }
 
     async findOne(id: string, currentUser?: CurrentUser) {
+        const findConfig: {
+            where: {
+                article: {
+                    id: string;
+                    isHiden?: false;
+                };
+            };
+            relations: {
+                article: true;
+            };
+            order: {
+                editedAt: 'DESC';
+            };
+        } = this.newestPart(id);
+
+        if (!currentUser || !canSeeHidenArticle(currentUser)) {
+            findConfig.where.article.isHiden = false;
+        }
+
         const articleHide = await this.articleHideRepository.findOne(
-            this.newestPart(id),
+            findConfig,
         );
 
-        //TODO use this logic in search too
-        const canSeeHiden = currentUser?.permissions.includes(
-            Permissions.EDIT_ARTICLE,
-        );
-
-        return articleHide && (!articleHide.isHiden || canSeeHiden)
-            ? articleHide.article
-            : null;
+        return articleHide?.article;
     }
 
     async update(
@@ -91,13 +112,20 @@ export class ArticleService {
 
         return this.articleRevisionRepository.manager.transaction(
             async (manager) => {
+                const revision = {
+                    ...newestRevision,
+                    ...updateArticleInput,
+                    editedBy: currentUser,
+                    article: newestRevision.article,
+                };
+
                 newestRevision.article.lastRevision = await manager.save(
                     ArticleRevisionEntity,
                     {
-                        ...newestRevision,
-                        ...updateArticleInput,
-                        editedBy: currentUser,
-                        article: newestRevision.article,
+                        ...revision,
+                        mentions: await this.markdownMentionService.getMentions(
+                            revision.content,
+                        ),
                     },
                 );
 
