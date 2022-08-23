@@ -68,6 +68,8 @@ export class SearchService {
         if (articleQb && (!currentUser || !canSeeHidenArticle(currentUser))) {
             articleQb
                 .leftJoin('main.hides', 'hide')
+                .distinctOn(['hide."articleId"'])
+                .orderBy('hide."editedAt"', 'DESC')
                 .andWhere('"isHiden" = false');
         }
 
