@@ -53,10 +53,10 @@ export class SearchQueryService {
 
             if (fieldInput && columns[field]) {
                 qb.addSelect(
-                    `ts_rank_cd(${alias}::tsvector, websearch_to_tsquery(:${paramName})) as "${field}_rank"`,
+                    `ts_rank_cd(${alias}::tsvector, websearch_to_tsquery('simple', :${paramName})) as "${field}_rank"`,
                 )
                     .andWhere(
-                        `websearch_to_tsquery(:${paramName}) @@ ${alias}::tsvector`,
+                        `websearch_to_tsquery('simple', :${paramName}) @@ ${alias}::tsvector`,
                     )
                     .setParameter(paramName, fieldInput);
             } else {
@@ -73,10 +73,10 @@ export class SearchQueryService {
             }[columns.kind];
 
             qb.addSelect(
-                `ts_rank_cd((${accrosField})::tsvector, websearch_to_tsquery(:query)) as query_rank`,
+                `ts_rank_cd((${accrosField})::tsvector, websearch_to_tsquery('simple', :query)) as query_rank`,
             )
                 .andWhere(
-                    `websearch_to_tsquery(:query) @@ (${accrosField})::tsvector`,
+                    `websearch_to_tsquery('simple', :query) @@ (${accrosField})::tsvector`,
                 )
                 .setParameter('query', query);
         }
