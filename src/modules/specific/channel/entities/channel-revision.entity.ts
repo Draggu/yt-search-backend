@@ -67,6 +67,7 @@ export class ChannelRevisionEntity extends ChannelRevisionProposalEntity {
     channel: ChannelEntity;
 
     @RelationId((revision: ChannelRevisionEntity) => revision.channel)
+    @HideField()
     channelId: string;
 
     @ManyToOne(() => UserEntity, {

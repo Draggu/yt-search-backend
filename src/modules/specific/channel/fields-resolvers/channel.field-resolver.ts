@@ -1,13 +1,13 @@
 import { Args, Parent, ResolveField, Resolver } from '@nestjs/graphql';
 import { PageInput } from 'common/dto/page';
+import { OpinionEntity } from 'modules/generic/opinion/entities/opinion.entity';
+import { OpinionsDataloader } from 'modules/generic/opinion/opinion.dataloader';
 import { Dataloader } from 'modules/infrastructure/dataloader/dataloader.decorator';
 import { Skip1MorePipe } from 'pipes/skip-1-more.pipe';
 import {
     ChannelContentDataloader,
-    ChannelOpinionsDataloader,
     ChannelRevisionsDataloader,
 } from '../channel.dataloader';
-import { ChannelOpinionEntity } from '../entities/channel-opinion.entity';
 import { ChannelRevisionEntity } from '../entities/channel-revision.entity';
 import { ChannelEntity } from '../entities/channel.entity';
 
@@ -30,12 +30,12 @@ export class ChannelFieldResolver {
         return dataloader.load(channel.ytId);
     }
 
-    @ResolveField(() => [ChannelOpinionEntity])
+    @ResolveField(() => [OpinionEntity])
     opinions(
         @Parent() channel: ChannelEntity,
         @Args('page') page: PageInput,
-        @Dataloader() dataloader: ChannelOpinionsDataloader,
-    ): Promise<ChannelOpinionEntity[]> {
-        return dataloader.load({ id: channel.ytId, page });
+        @Dataloader() dataloader: OpinionsDataloader,
+    ): Promise<OpinionEntity[]> {
+        return dataloader.load({ id: channel.opinionTarget.id, page });
     }
 }

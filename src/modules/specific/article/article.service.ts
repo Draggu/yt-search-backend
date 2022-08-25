@@ -1,8 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import { CurrentUser } from 'directives/auth/types';
 import { MarkdownMentionService } from 'modules/generic/markdown-mention/markdown-mention.service';
-import { Repository } from 'typeorm';
+import { CreateOpinionInput } from 'modules/generic/opinion/dto/create-opinion.input';
+import { OpinionTargetEntity } from 'modules/generic/opinion/entities/opinion-target.entity';
+import { OpinionService } from 'modules/generic/opinion/opinion.service';
+import { EntityManager, Repository } from 'typeorm';
 import { CreateArticleInput, UpdateArticleInput } from './dto/article.input';
 import { ArticleHideEntity } from './entities/article-hide.entity';
 import { ArticleRevisionEntity } from './entities/article-revision.entity';
@@ -18,8 +21,24 @@ export class ArticleService {
         private readonly articleHideRepository: Repository<ArticleHideEntity>,
         @InjectRepository(ArticleRevisionEntity)
         private readonly articleRevisionRepository: Repository<ArticleRevisionEntity>,
+        @InjectEntityManager() private readonly entitymanager: EntityManager,
         private readonly markdownMentionService: MarkdownMentionService,
+        private readonly opinionService: OpinionService,
     ) {}
+
+    async comment(
+        articleId: string,
+        createOpinionInput: CreateOpinionInput,
+        currentUser?: CurrentUser,
+    ) {
+        return this.opinionService.create(
+            createOpinionInput,
+            await this.articleRepository
+                .findOneOrFail({ where: { id: articleId } })
+                .then((article) => article.opinionTarget.id),
+            currentUser,
+        );
+    }
 
     async create(
         currentUser: CurrentUser,
@@ -41,6 +60,7 @@ export class ArticleService {
                 }),
             ],
             author: currentUser,
+            opinionTarget: this.entitymanager.create(OpinionTargetEntity),
         });
     }
 

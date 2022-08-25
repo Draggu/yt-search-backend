@@ -3,6 +3,9 @@ import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import { PageInput } from 'common/dto/page';
 import { CurrentUser } from 'directives/auth/types';
 import { MarkdownMentionService } from 'modules/generic/markdown-mention/markdown-mention.service';
+import { CreateOpinionInput } from 'modules/generic/opinion/dto/create-opinion.input';
+import { OpinionTargetEntity } from 'modules/generic/opinion/entities/opinion-target.entity';
+import { OpinionService } from 'modules/generic/opinion/opinion.service';
 import { socialMedia2Map } from 'modules/generic/social-media/helpers/to-map';
 import { EntityManager, Repository } from 'typeorm';
 import { ProposeYoutuberInput } from './dto/propose-youtuber.input';
@@ -19,7 +22,22 @@ export class YoutuberService {
         private readonly youtuberProposalRepository: Repository<YoutuberProposalEntity>,
         @InjectEntityManager() private readonly entityManager: EntityManager,
         private readonly markdownMentionService: MarkdownMentionService,
+        private readonly opinionService: OpinionService,
     ) {}
+
+    async comment(
+        youtuberId: string,
+        createOpinionInput: CreateOpinionInput,
+        currentUser?: CurrentUser,
+    ) {
+        return this.opinionService.create(
+            createOpinionInput,
+            await this.youtuberRepository
+                .findOneOrFail({ where: { id: youtuberId } })
+                .then((youtuber) => youtuber.opinionTarget.id),
+            currentUser,
+        );
+    }
 
     findOne(id: string) {
         return this.youtuberRepository.findOne({ where: { id } });
@@ -83,7 +101,12 @@ export class YoutuberService {
         return this.entityManager.transaction(async (manager) => {
             const orCreate = (youtuber: YoutuberEntity | null) =>
                 youtuber ||
-                manager.save(YoutuberEntity, this.youtuberRepository.create());
+                manager.save(
+                    YoutuberEntity,
+                    this.youtuberRepository.create({
+                        opinionTarget: manager.create(OpinionTargetEntity),
+                    }),
+                );
 
             const youtuber = youtuberId
                 ? await manager

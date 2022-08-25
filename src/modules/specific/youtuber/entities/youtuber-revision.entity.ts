@@ -72,6 +72,7 @@ export class YoutuberRevisionEntity extends YoutuberRevisionProposalEntity {
     youtuber: YoutuberEntity;
 
     @RelationId((revision: YoutuberRevisionEntity) => revision.youtuber)
+    @HideField()
     youtuberId: string;
 
     @ManyToOne(() => UserEntity, {

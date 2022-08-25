@@ -1,6 +1,8 @@
 import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { Auth } from 'directives/auth/decorators/auth.decorator';
 import { CurrentUser, Permissions } from 'directives/auth/types';
+import { CreateOpinionInput } from 'modules/generic/opinion/dto/create-opinion.input';
+import { OpinionEntity } from 'modules/generic/opinion/entities/opinion.entity';
 import { RemoveNullsPipe } from 'pipes/remove-nulls.pipe';
 import { ArticleService } from './article.service';
 import { seeHidenArticlesDescription } from './docs';
@@ -10,6 +12,24 @@ import { ArticleEntity } from './entities/article.entity';
 @Resolver(() => ArticleEntity)
 export class ArticleResolver {
     constructor(private readonly articleService: ArticleService) {}
+
+    @Mutation(() => OpinionEntity)
+    commentArticle(
+        @Args('articleId', { type: () => ID })
+        articleId: string,
+        @Args('opinion') createOpinionInput: CreateOpinionInput,
+        @Auth({
+            optional: true,
+            permissions: [Permissions.COMMENT],
+        })
+        currentUser?: CurrentUser,
+    ): Promise<OpinionEntity> {
+        return this.articleService.comment(
+            articleId,
+            createOpinionInput,
+            currentUser,
+        );
+    }
 
     @Mutation(() => ArticleEntity)
     writeArticle(

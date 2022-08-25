@@ -2,6 +2,8 @@ import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { PageInput } from 'common/dto/page';
 import { Auth } from 'directives/auth/decorators/auth.decorator';
 import { CurrentUser, Permissions } from 'directives/auth/types';
+import { CreateOpinionInput } from 'modules/generic/opinion/dto/create-opinion.input';
+import { OpinionEntity } from 'modules/generic/opinion/entities/opinion.entity';
 import { ChannelService } from './channel.service';
 import { ProposeChannelInput } from './dto/propose-channel.input';
 import { ChannelProposalEntity } from './entities/channel-proposal.entity';
@@ -10,6 +12,24 @@ import { ChannelEntity } from './entities/channel.entity';
 @Resolver(() => ChannelEntity)
 export class ChannelResolver {
     constructor(private readonly channelService: ChannelService) {}
+
+    @Mutation(() => OpinionEntity)
+    commentChannel(
+        @Args('channelId', { type: () => ID })
+        channelId: string,
+        @Args('opinion') createOpinionInput: CreateOpinionInput,
+        @Auth({
+            optional: true,
+            permissions: [Permissions.COMMENT],
+        })
+        currentUser?: CurrentUser,
+    ): Promise<OpinionEntity> {
+        return this.channelService.comment(
+            channelId,
+            createOpinionInput,
+            currentUser,
+        );
+    }
 
     @Query(() => ChannelEntity, {
         nullable: true,

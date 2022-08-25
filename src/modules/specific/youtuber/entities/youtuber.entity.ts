@@ -1,4 +1,5 @@
 import { Field, HideField, ID, ObjectType } from '@nestjs/graphql';
+import { OpinionTargetEntity } from 'modules/generic/opinion/entities/opinion-target.entity';
 import {
     Entity,
     JoinColumn,
@@ -6,7 +7,6 @@ import {
     OneToOne,
     PrimaryGeneratedColumn,
 } from 'typeorm';
-import { YoutuberOpinionEntity } from './youtuber-opinion.entity';
 import { YoutuberRevisionEntity } from './youtuber-revision.entity';
 
 @ObjectType()
@@ -25,7 +25,7 @@ export class YoutuberEntity {
     @HideField()
     revisions: YoutuberRevisionEntity[];
 
-    @OneToMany(() => YoutuberOpinionEntity, (opinion) => opinion.target)
+    @OneToOne(() => OpinionTargetEntity, { cascade: true, eager: true })
     @HideField()
-    opinions: YoutuberOpinionEntity[];
+    opinionTarget: OpinionTargetEntity;
 }

@@ -3,6 +3,9 @@ import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import { PageInput } from 'common/dto/page';
 import { CurrentUser } from 'directives/auth/types';
 import { MarkdownMentionService } from 'modules/generic/markdown-mention/markdown-mention.service';
+import { CreateOpinionInput } from 'modules/generic/opinion/dto/create-opinion.input';
+import { OpinionTargetEntity } from 'modules/generic/opinion/entities/opinion-target.entity';
+import { OpinionService } from 'modules/generic/opinion/opinion.service';
 import { socialMedia2Map } from 'modules/generic/social-media/helpers/to-map';
 import { Youtube } from 'modules/infrastructure/youtube-api/youtube-api.module';
 import { EntityManager, Repository } from 'typeorm';
@@ -21,7 +24,22 @@ export class ChannelService {
         @InjectEntityManager() private readonly entityManager: EntityManager,
         private readonly youtube: Youtube,
         private readonly markdownMentionService: MarkdownMentionService,
+        private readonly opinionService: OpinionService,
     ) {}
+
+    async comment(
+        channelId: string,
+        createOpinionInput: CreateOpinionInput,
+        currentUser?: CurrentUser,
+    ) {
+        return this.opinionService.create(
+            createOpinionInput,
+            await this.channelRepository
+                .findOneOrFail({ where: { ytId: channelId } })
+                .then((channel) => channel.opinionTarget.id),
+            currentUser,
+        );
+    }
 
     findOne(ytId: string) {
         return this.channelRepository.findOne({
@@ -99,6 +117,7 @@ export class ChannelService {
                             name: await this.fetchChannelFromYT(ytId).then(
                                 ({ title }) => title!,
                             ),
+                            opinionTarget: manager.create(OpinionTargetEntity),
                         }),
                 );
 

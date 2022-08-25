@@ -1,15 +1,25 @@
 import { Field, HideField, ID, Int, ObjectType } from '@nestjs/graphql';
 import { UserEntity } from 'modules/specific/user/entities/user.entity';
-import { Check, Column, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+    Check,
+    Column,
+    Entity,
+    ManyToOne,
+    PrimaryGeneratedColumn,
+} from 'typeorm';
+import { OpinionTargetEntity } from './opinion-target.entity';
 
-@ObjectType({
-    isAbstract: true,
-})
+@ObjectType()
+@Entity()
 @Check('stars > 0 AND stars <= 10')
 export class OpinionEntity {
     @PrimaryGeneratedColumn('uuid')
     @Field(() => ID)
     id: string;
+
+    @ManyToOne(() => OpinionTargetEntity)
+    @HideField()
+    target: OpinionTargetEntity;
 
     @Column({
         nullable: true,

@@ -1,21 +1,12 @@
-import { DynamicModule, Module, Type } from '@nestjs/common';
-import { Opinion, OpinionTargetKey } from './consts';
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { OpinionTargetEntity } from './entities/opinion-target.entity';
+import { OpinionEntity } from './entities/opinion.entity';
 import { OpinionService } from './opinion.service';
 
 @Module({
+    imports: [TypeOrmModule.forFeature([OpinionEntity, OpinionTargetEntity])],
     providers: [OpinionService],
     exports: [OpinionService],
 })
-export class OpinionModule {
-    static forFeature(target: Type<Opinion>): DynamicModule {
-        return {
-            module: OpinionModule,
-            providers: [
-                {
-                    provide: OpinionTargetKey,
-                    useValue: target,
-                },
-            ],
-        };
-    }
-}
+export class OpinionModule {}

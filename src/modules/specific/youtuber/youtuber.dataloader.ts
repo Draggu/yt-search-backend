@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { RelationPaginatedDataloader } from 'common/dataloaders/relation-paginated.dataloader';
 import { RelationDataloader } from 'common/dataloaders/relation.dataloader';
 import { CategoriesDataloader } from 'modules/specific/categorie/categories.dataloader';
-import { YoutuberOpinionEntity } from './entities/youtuber-opinion.entity';
 import { YoutuberRevisionEntity } from './entities/youtuber-revision.entity';
 import { YoutuberEntity } from './entities/youtuber.entity';
 
@@ -12,16 +11,6 @@ export class YoutuberRevisionsDataloader extends RelationPaginatedDataloader(
     'youtuberId',
     {
         column: 'editedAt',
-        order: 'DESC',
-    },
-) {}
-
-@Injectable()
-export class YoutuberOpinionsDataloader extends RelationPaginatedDataloader(
-    YoutuberOpinionEntity,
-    'targetId',
-    {
-        column: 'createdAt',
         order: 'DESC',
     },
 ) {}

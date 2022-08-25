@@ -28,6 +28,7 @@ export class ArticleRevisionEntity {
     article: ArticleEntity;
 
     @RelationId((revision: ArticleRevisionEntity) => revision.article)
+    @HideField()
     articleId: string;
 
     @Column({

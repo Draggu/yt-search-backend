@@ -43,23 +43,11 @@ type ArticleEntity {
   content: ArticleRevisionEntity!
   createdAt: DateTime!
   id: ID!
-  opinions(page: PageInput!): [ArticleOpinion!]!
+  opinions(page: PageInput!): [OpinionEntity!]!
   revisions(page: PageInput!): [ArticleRevisionEntity!]!
 }
 
-type ArticleOpinion {
-  author: UserEntity
-  content: String
-  createdAt: DateTime!
-  id: ID!
-  """integer in range 1-10"""
-  stars: Int!
-  target: ArticleEntity!
-  targetId: String!
-}
-
 type ArticleRevisionEntity {
-  articleId: String!
   categories: [CategorieEntity!]!
   content: String!
   editedAt: DateTime!
@@ -127,20 +115,9 @@ type Channel {
   content: ChannelRevision!
   lastSyncWithYT: DateTime!
   name: String!
-  opinions(page: PageInput!): [ChannelOpinion!]!
+  opinions(page: PageInput!): [OpinionEntity!]!
   revisions(page: PageInput!): [ChannelRevision!]!
   ytId: ID!
-}
-
-type ChannelOpinion {
-  author: UserEntity
-  content: String
-  createdAt: DateTime!
-  id: ID!
-  """integer in range 1-10"""
-  stars: Int!
-  target: Channel!
-  targetId: String!
 }
 
 type ChannelProposal {
@@ -153,7 +130,6 @@ type ChannelProposal {
 
 type ChannelRevision {
   categories: [CategorieEntity!]!
-  channelId: String!
   content: String!
   editedAt: DateTime!
   editedBy: UserEntity!
@@ -207,9 +183,9 @@ type Mutation {
   changeArticleVisibility(id: ID!): ArticleEntity! @auth(permissions: [EDIT_ARTICLE])
   """user can not modify own permissions!"""
   changePermissions(permissions: UpdatePermissionInput!): UserEntity! @recaptchaV3(actionName: "change-permissions") @auth(confirmationRequired: true, permissions: [MODIFY_PERMISSION])
-  commentArticle(articleId: ID!, opinion: CreateOpinionInput!): ArticleOpinion! @auth(optional: true, permissions: [COMMENT])
-  commentChannel(channelId: ID!, opinion: CreateOpinionInput!): ChannelOpinion! @auth(optional: true, permissions: [COMMENT])
-  commentYoutuber(opinion: CreateOpinionInput!, youtuberId: ID!): YoutuberOpinion! @auth(optional: true, permissions: [COMMENT])
+  commentArticle(articleId: ID!, opinion: CreateOpinionInput!): OpinionEntity! @auth(optional: true, permissions: [COMMENT])
+  commentChannel(channelId: ID!, opinion: CreateOpinionInput!): OpinionEntity! @auth(optional: true, permissions: [COMMENT])
+  commentYoutuber(opinion: CreateOpinionInput!, youtuberId: ID!): OpinionEntity! @auth(optional: true, permissions: [COMMENT])
   createCategorie(createCategorieInput: CreateCategorieInput!): CategorieEntity!
   destroyToken(logout: String!): TokenEntity! @recaptchaV3(actionName: "logout-device") @auth(confirmationRequired: true)
   login(login: LoginInput!): AuthPayload! @recaptchaV3(actionName: "login")
@@ -224,6 +200,14 @@ type Mutation {
   updateArticle(updateArticleInput: UpdateArticleInput!): ArticleEntity! @auth(permissions: [EDIT_ARTICLE])
   updateUser(updateUserInput: UpdateUserInput!): UserEntity! @auth
   writeArticle(createArticleInput: CreateArticleInput!): ArticleEntity! @auth(permissions: [WRITE_ARTICLE])
+}
+
+type OpinionEntity {
+  content: String
+  createdAt: DateTime!
+  id: ID!
+  """integer in range 1-10"""
+  stars: Int!
 }
 
 input PageInput {
@@ -403,19 +387,8 @@ type UserEntity {
 type YoutuberEntity {
   content: YoutuberRevisionEntity!
   id: ID!
-  opinions(page: PageInput!): [YoutuberOpinion!]!
+  opinions(page: PageInput!): [OpinionEntity!]!
   revisions(page: PageInput!): [YoutuberRevisionEntity!]!
-}
-
-type YoutuberOpinion {
-  author: UserEntity
-  content: String
-  createdAt: DateTime!
-  id: ID!
-  """integer in range 1-10"""
-  stars: Int!
-  target: YoutuberEntity!
-  targetId: String!
 }
 
 type YoutuberProposal {
@@ -440,5 +413,4 @@ type YoutuberRevisionEntity {
   name: String!
   realName: String
   socialMedia: [SocialMediaEntity!]!
-  youtuberId: String!
 }

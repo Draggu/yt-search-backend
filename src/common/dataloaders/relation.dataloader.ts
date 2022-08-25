@@ -14,16 +14,13 @@ export const RelationDataloader = <
 ) => {
     @Injectable()
     class _ToOneRelationDataloader extends DataLoader<string, E[R]> {
-        // compatibility for OpinionTargetDataloader
-        protected Entity = Entity;
-
         constructor(
             @InjectEntityManager()
             readonly entityManager: EntityManager,
         ) {
             super(async (ids) => {
                 const results = await entityManager
-                    .createQueryBuilder(this.Entity, 'entity')
+                    .createQueryBuilder(Entity, 'entity')
                     .select([`entity.${id}`])
                     .leftJoinAndSelect('entity.' + relation, 'relation')
                     .where(`entity.${id} IN (:...ids)`, { ids })

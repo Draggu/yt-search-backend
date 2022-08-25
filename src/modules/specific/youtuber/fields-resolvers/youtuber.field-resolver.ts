@@ -1,13 +1,13 @@
 import { Args, Parent, ResolveField, Resolver } from '@nestjs/graphql';
 import { PageInput } from 'common/dto/page';
+import { OpinionEntity } from 'modules/generic/opinion/entities/opinion.entity';
+import { OpinionsDataloader } from 'modules/generic/opinion/opinion.dataloader';
 import { Dataloader } from 'modules/infrastructure/dataloader/dataloader.decorator';
 import { Skip1MorePipe } from 'pipes/skip-1-more.pipe';
-import { YoutuberOpinionEntity } from '../entities/youtuber-opinion.entity';
 import { YoutuberRevisionEntity } from '../entities/youtuber-revision.entity';
 import { YoutuberEntity } from '../entities/youtuber.entity';
 import {
     YoutuberContentDataloader,
-    YoutuberOpinionsDataloader,
     YoutuberRevisionsDataloader,
 } from '../youtuber.dataloader';
 
@@ -30,12 +30,12 @@ export class YoutuberFieldResolver {
         return dataloader.load(youtuber.id);
     }
 
-    @ResolveField(() => [YoutuberOpinionEntity])
+    @ResolveField(() => [OpinionEntity])
     opinions(
         @Parent() youtuber: YoutuberEntity,
         @Args('page') page: PageInput,
-        @Dataloader() dataloader: YoutuberOpinionsDataloader,
-    ): Promise<YoutuberOpinionEntity[]> {
-        return dataloader.load({ id: youtuber.id, page });
+        @Dataloader() dataloader: OpinionsDataloader,
+    ): Promise<OpinionEntity[]> {
+        return dataloader.load({ id: youtuber.opinionTarget.id, page });
     }
 }

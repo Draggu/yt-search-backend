@@ -1,15 +1,15 @@
 import { Args, Parent, ResolveField, Resolver } from '@nestjs/graphql';
 import { PageInput } from 'common/dto/page';
+import { OpinionEntity } from 'modules/generic/opinion/entities/opinion.entity';
+import { OpinionsDataloader } from 'modules/generic/opinion/opinion.dataloader';
 import { Dataloader } from 'modules/infrastructure/dataloader/dataloader.decorator';
 import { UserEntity } from 'modules/specific/user/entities/user.entity';
 import { Skip1MorePipe } from 'pipes/skip-1-more.pipe';
 import {
     ArticleAuthorDataloader,
     ArticleContentDataloader,
-    ArticleOpinionsDataloader,
     ArticleRevisionsDataloader,
 } from '../article.dataloader';
-import { ArticleOpinionEntity } from '../entities/article-opinion.entity';
 import { ArticleRevisionEntity } from '../entities/article-revision.entity';
 import { ArticleEntity } from '../entities/article.entity';
 
@@ -23,13 +23,13 @@ export class ArticleFieldResolver {
         return dataloader.load(article.id);
     }
 
-    @ResolveField(() => [ArticleOpinionEntity])
+    @ResolveField(() => [OpinionEntity])
     opinions(
         @Parent() article: ArticleEntity,
         @Args('page') page: PageInput,
-        @Dataloader() dataloader: ArticleOpinionsDataloader,
-    ): Promise<ArticleOpinionEntity[]> {
-        return dataloader.load({ id: article.id, page });
+        @Dataloader() dataloader: OpinionsDataloader,
+    ): Promise<OpinionEntity[]> {
+        return dataloader.load({ id: article.opinionTarget.id, page });
     }
 
     @ResolveField(() => [ArticleRevisionEntity])
