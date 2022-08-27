@@ -41,8 +41,8 @@ directive @recaptchaV3(actionName: String!) on FIELD_DEFINITION
 type ArticleEntity {
   author: UserEntity!
   content: ArticleRevisionEntity!
-  createHide(page: PageInput!): [HideEntity!]!
   createdAt: DateTime!
+  hides(page: PageInput!): [HideEntity!]!
   id: ID!
   opinions(page: PageInput!): [OpinionEntity!]!
   revisions(page: PageInput!): [ArticleRevisionEntity!]!

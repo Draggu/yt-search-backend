@@ -2,6 +2,7 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
+import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { GraphQlModuleConfig } from 'config/graphql.module.config';
 import { TypeOrmModuleConfig } from 'config/typeorm.module.config';
@@ -25,6 +26,7 @@ import { SearchModule } from './modules/specific/search/search.module';
         TypeOrmModule.forRootAsync({
             useClass: TypeOrmModuleConfig,
         }),
+        ScheduleModule.forRoot(),
         UserModule,
         AuthModule,
         YoutuberModule,

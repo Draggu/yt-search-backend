@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import * as DataLoader from 'dataloader';
+import * as _ from 'lodash';
 import { ArticleEntity } from 'modules/specific/article/entities/article.entity';
 import { ChannelEntity } from 'modules/specific/channel/entities/channel.entity';
 import { UserEntity } from 'modules/specific/user/entities/user.entity';
@@ -13,47 +14,41 @@ import { MentionsList } from './types';
 export class MentionDataloader extends DataLoader<MentionsList, MentionEntity> {
     constructor(@InjectEntityManager() entityManager: EntityManager) {
         super(async (mentions) => {
-            const _users = await entityManager.find(UserEntity, {
-                where: {
-                    id: In(mentions.flatMap((mention) => mention.user)),
-                },
-            });
-            const users = Object.fromEntries(
-                _users.map((user) => [user.id, user]),
-            );
+            const [users, articles, youtubers, channels] = await Promise.all([
+                entityManager.find(UserEntity, {
+                    where: {
+                        id: In(mentions.flatMap((mention) => mention.user)),
+                    },
+                }),
+                entityManager.find(ArticleEntity, {
+                    where: {
+                        id: In(mentions.flatMap((mention) => mention.article)),
+                    },
+                }),
+                entityManager.find(YoutuberEntity, {
+                    where: {
+                        id: In(mentions.flatMap((mention) => mention.youtuber)),
+                    },
+                }),
+                entityManager.find(ChannelEntity, {
+                    where: {
+                        ytId: In(
+                            mentions.flatMap((mention) => mention.channel),
+                        ),
+                    },
+                }),
+            ]);
 
-            const _articles = await entityManager.find(ArticleEntity, {
-                where: {
-                    id: In(mentions.flatMap((mention) => mention.article)),
-                },
-            });
-            const articles = Object.fromEntries(
-                _articles.map((article) => [article.id, article]),
-            );
-
-            const _youtubers = await entityManager.find(YoutuberEntity, {
-                where: {
-                    id: In(mentions.flatMap((mention) => mention.youtuber)),
-                },
-            });
-            const youtubers = Object.fromEntries(
-                _youtubers.map((youtuber) => [youtuber.id, youtuber]),
-            );
-
-            const _channels = await entityManager.find(ChannelEntity, {
-                where: {
-                    ytId: In(mentions.flatMap((mention) => mention.channel)),
-                },
-            });
-            const channels = Object.fromEntries(
-                _channels.map((channel) => [channel.ytId, channel]),
-            );
+            const usersMap = _.keyBy(users, (user) => user.id);
+            const articlesMap = _.keyBy(articles, (article) => article.id);
+            const youtubersMap = _.keyBy(youtubers, (youtuber) => youtuber.id);
+            const channelsMap = _.keyBy(channels, (channel) => channel.ytId);
 
             return mentions.map((mention) => ({
-                users: mention.user.map((id) => users[id]),
-                articles: mention.article.map((id) => articles[id]),
-                youtubers: mention.youtuber.map((id) => youtubers[id]),
-                channels: mention.channel.map((id) => channels[id]),
+                users: mention.user.map((id) => usersMap[id]),
+                articles: mention.article.map((id) => articlesMap[id]),
+                youtubers: mention.youtuber.map((id) => youtubersMap[id]),
+                channels: mention.channel.map((id) => channelsMap[id]),
             }));
         });
     }

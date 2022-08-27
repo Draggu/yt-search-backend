@@ -13,6 +13,7 @@ import {
 import { ChannelEntity } from './entities/channel.entity';
 import { ChannelRevisionFieldResolver } from './fields-resolvers/channel-revision.field-resolver';
 import { ChannelFieldResolver } from './fields-resolvers/channel.field-resolver';
+import { RefetchChannelScheduler } from './schedulers/refetch-channel.scheduler';
 
 @Module({
     imports: [
@@ -27,6 +28,7 @@ import { ChannelFieldResolver } from './fields-resolvers/channel.field-resolver'
         MarkdownMentionModule,
     ],
     providers: [
+        RefetchChannelScheduler,
         ChannelResolver,
         ChannelFieldResolver,
         ChannelRevisionFieldResolver,
