@@ -1,25 +1,18 @@
 import { Field, HideField, ID, ObjectType } from '@nestjs/graphql';
 import { UserEntity } from 'modules/specific/user/entities/user.entity';
-import {
-    Column,
-    Entity,
-    JoinColumn,
-    ManyToOne,
-    PrimaryGeneratedColumn,
-} from 'typeorm';
-import { ArticleEntity } from './article.entity';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { HideTargetEntity } from './hide-target.entity';
 
 @Entity()
 @ObjectType()
-export class ArticleHideEntity {
+export class HideEntity {
     @PrimaryGeneratedColumn('uuid')
     @Field(() => ID)
     id: string;
 
-    @ManyToOne(() => ArticleEntity)
-    @JoinColumn()
+    @ManyToOne(() => HideTargetEntity)
     @HideField()
-    article: ArticleEntity;
+    target: HideTargetEntity;
 
     @Column({
         default: () => 'NOW()',
@@ -30,6 +23,11 @@ export class ArticleHideEntity {
         default: false,
     })
     isHiden: boolean;
+
+    @Column({
+        nullable: true,
+    })
+    reason?: string;
 
     @ManyToOne(() => UserEntity)
     @HideField()

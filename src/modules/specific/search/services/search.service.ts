@@ -40,7 +40,6 @@ export class SearchService {
                 fields,
                 articleSelect,
                 ArticleEntity,
-                'targetId',
                 articleColumns,
                 query,
             );
@@ -50,7 +49,6 @@ export class SearchService {
                 fields,
                 channelSelect,
                 ChannelEntity,
-                'targetYtId',
                 channelColumns,
                 query,
             );
@@ -60,16 +58,13 @@ export class SearchService {
                 fields,
                 youtuberSelect,
                 YoutuberEntity,
-                'targetId',
                 youtuberColumns,
                 query,
             );
 
-        if (articleQb && (!currentUser || !canSeeHidenArticle(currentUser))) {
+        if (articleQb && !canSeeHidenArticle(currentUser)) {
             articleQb
-                .leftJoin('main.hides', 'hide')
-                .distinctOn(['hide."articleId"'])
-                .orderBy('hide."editedAt"', 'DESC')
+                .leftJoin('main.hideTarget', 'hide')
                 .andWhere('"isHiden" = false');
         }
 

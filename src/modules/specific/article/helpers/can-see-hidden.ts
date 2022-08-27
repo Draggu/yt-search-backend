@@ -1,4 +1,4 @@
 import { CurrentUser, Permissions } from 'directives/auth/types';
 
-export const canSeeHidenArticle = (currentUser: CurrentUser) =>
-    currentUser.permissions.includes(Permissions.EDIT_ARTICLE);
+export const canSeeHidenArticle = (currentUser?: CurrentUser) =>
+    currentUser && currentUser.permissions.includes(Permissions.EDIT_ARTICLE);

@@ -26,8 +26,11 @@ const allColumnsSelect = (kind: SearchResultKind) => {
         columnsMap.createdAt ? 'main."createdAt"' : 'NULL as "createdAt"',
         columnsMap.authorId ? 'main."authorId"' : 'NULL as "authorId"',
         `'${kind}' as kind`,
-    ];
+    ].join(', ');
 };
+
+// it's joined manually because there must be specific order
+// typeorm likes adding own aliases and changing order of fields
 
 export const articleSelect = allColumnsSelect(SearchResultKind.ARTICLE);
 export const channelSelect = allColumnsSelect(SearchResultKind.CHANNEL);

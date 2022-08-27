@@ -1,6 +1,8 @@
 import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { Auth } from 'directives/auth/decorators/auth.decorator';
 import { CurrentUser, Permissions } from 'directives/auth/types';
+import { CreateHideInput } from 'modules/generic/hides/dto/create-hide.input';
+import { HideEntity } from 'modules/generic/hides/entities/hide.entity';
 import { CreateOpinionInput } from 'modules/generic/opinion/dto/create-opinion.input';
 import { OpinionEntity } from 'modules/generic/opinion/entities/opinion.entity';
 import { RemoveNullsPipe } from 'pipes/remove-nulls.pipe';
@@ -68,14 +70,15 @@ export class ArticleResolver {
         return this.articleService.update(currentUser, updateArticleInput);
     }
 
-    @Mutation(() => ArticleEntity)
-    changeArticleVisibility(
+    @Mutation(() => HideEntity)
+    toogleArticleHide(
         @Auth({
             permissions: [Permissions.EDIT_ARTICLE],
         })
         currentUser: CurrentUser,
         @Args('id', { type: () => ID }) id: string,
-    ): Promise<ArticleEntity> {
-        return this.articleService.changeVisibility(currentUser, id);
+        @Args('createHideInput') createHideInput: CreateHideInput,
+    ): Promise<HideEntity> {
+        return this.articleService.toogleHide(currentUser, id, createHideInput);
     }
 }

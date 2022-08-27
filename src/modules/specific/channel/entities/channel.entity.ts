@@ -40,6 +40,7 @@ export class ChannelEntity {
     revisions: ChannelRevisionEntity[];
 
     @OneToOne(() => OpinionTargetEntity, { cascade: true, eager: true })
+    @JoinColumn()
     @HideField()
     opinionTarget: OpinionTargetEntity;
 }

@@ -41,6 +41,7 @@ directive @recaptchaV3(actionName: String!) on FIELD_DEFINITION
 type ArticleEntity {
   author: UserEntity!
   content: ArticleRevisionEntity!
+  createHide(page: PageInput!): [HideEntity!]!
   createdAt: DateTime!
   id: ID!
   opinions(page: PageInput!): [OpinionEntity!]!
@@ -145,13 +146,17 @@ input CreateArticleInput {
   format: /^mention:/(user|article|youtuber|channel)/([0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12})$/
   """
   content: String! @constraint(maxLength: 10000)
-  title: String!
+  title: String! @constraint(maxLength: 80)
 }
 
 input CreateCategorieInput {
   categorieId: ID!
   mode: CategorieCreationMode!
   name: String!
+}
+
+input CreateHideInput {
+  reason: String
 }
 
 input CreateOpinionInput {
@@ -163,6 +168,14 @@ input CreateOpinionInput {
 A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
 """
 scalar DateTime
+
+type HideEntity {
+  author: UserEntity
+  editedAt: DateTime!
+  id: ID!
+  isHiden: Boolean!
+  reason: String
+}
 
 input LoginInput {
   deviceName: String!
@@ -180,7 +193,6 @@ type MentionEntity {
 type Mutation {
   acceptChannelProposal(edit: ProposeChannelInput, id: ID!): Channel! @auth(permissions: [ACCEPT_PROPOSAL])
   acceptYoutuberProposal(edit: ProposeYoutuberInput, id: ID!): YoutuberEntity! @auth(permissions: [ACCEPT_PROPOSAL])
-  changeArticleVisibility(id: ID!): ArticleEntity! @auth(permissions: [EDIT_ARTICLE])
   """user can not modify own permissions!"""
   changePermissions(permissions: UpdatePermissionInput!): UserEntity! @recaptchaV3(actionName: "change-permissions") @auth(confirmationRequired: true, permissions: [MODIFY_PERMISSION])
   commentArticle(articleId: ID!, opinion: CreateOpinionInput!): OpinionEntity! @auth(optional: true, permissions: [COMMENT])
@@ -197,6 +209,7 @@ type Mutation {
   rejectYoutuberProposal(id: ID!): YoutuberProposal @auth(permissions: [ACCEPT_PROPOSAL])
   removeCategorie(id: ID!): CategorieEntity!
   renameCategorie(updateCategorieInput: UpdateCategorieInput!): CategorieEntity!
+  toogleArticleHide(createHideInput: CreateHideInput!, id: ID!): HideEntity! @auth(permissions: [EDIT_ARTICLE])
   updateArticle(updateArticleInput: UpdateArticleInput!): ArticleEntity! @auth(permissions: [EDIT_ARTICLE])
   updateUser(updateUserInput: UpdateUserInput!): UserEntity! @auth
   writeArticle(createArticleInput: CreateArticleInput!): ArticleEntity! @auth(permissions: [WRITE_ARTICLE])
@@ -357,7 +370,7 @@ input UpdateArticleInput {
   """
   content: String @constraint(maxLength: 10000)
   id: ID!
-  title: String
+  title: String @constraint(maxLength: 80)
 }
 
 input UpdateCategorieInput {

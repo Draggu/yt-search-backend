@@ -114,25 +114,21 @@ export class SearchQueryService {
 
     unionPartQb(
         fields: SearchFieldsInput,
-        select: string[],
+        select: string,
         entity: EntityTarget<unknown>,
-        targetId: string,
         columns: AllColumns,
         query?: string,
     ) {
         const qb = this.dataSource
             .createQueryBuilder()
-            .select(
-                // it's joined manually because there must be specific order
-                // typeorm likes adding own aliases and changing order of fields
-                select.join(', '),
-            )
+            .select(select)
             .addSelect(
-                `AVG(opinions.stars) OVER (PARTITION BY "${targetId}") AS score`,
+                `AVG(opinions.stars) OVER (PARTITION BY "targetId") AS score`,
             )
             .from(entity, 'main')
             .leftJoin('main.lastRevision', 'rev')
-            .leftJoin('main.opinions', 'opinions');
+            .leftJoin('main.opinionTarget', 'op_target')
+            .leftJoin('op_target.opinions', 'opinions');
 
         this.createWhere(qb, columns, fields, query);
 

@@ -12,6 +12,10 @@ export class CreateArticleInput {
         description: mentionDocsDescription,
     })
     content: string;
+
+    @ConstraintDirective({
+        maxLength: 80,
+    })
     title: string;
 }
 

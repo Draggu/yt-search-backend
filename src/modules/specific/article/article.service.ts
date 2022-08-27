@@ -1,13 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import { CurrentUser } from 'directives/auth/types';
+import { CreateHideInput } from 'modules/generic/hides/dto/create-hide.input';
+import { HideTargetEntity } from 'modules/generic/hides/entities/hide-target.entity';
+import { HidesService } from 'modules/generic/hides/hides.service';
 import { MarkdownMentionService } from 'modules/generic/markdown-mention/markdown-mention.service';
 import { CreateOpinionInput } from 'modules/generic/opinion/dto/create-opinion.input';
 import { OpinionTargetEntity } from 'modules/generic/opinion/entities/opinion-target.entity';
 import { OpinionService } from 'modules/generic/opinion/opinion.service';
 import { EntityManager, Repository } from 'typeorm';
 import { CreateArticleInput, UpdateArticleInput } from './dto/article.input';
-import { ArticleHideEntity } from './entities/article-hide.entity';
 import { ArticleRevisionEntity } from './entities/article-revision.entity';
 import { ArticleEntity } from './entities/article.entity';
 import { canSeeHidenArticle } from './helpers/can-see-hidden';
@@ -17,13 +19,12 @@ export class ArticleService {
     constructor(
         @InjectRepository(ArticleEntity)
         private readonly articleRepository: Repository<ArticleEntity>,
-        @InjectRepository(ArticleHideEntity)
-        private readonly articleHideRepository: Repository<ArticleHideEntity>,
         @InjectRepository(ArticleRevisionEntity)
         private readonly articleRevisionRepository: Repository<ArticleRevisionEntity>,
         @InjectEntityManager() private readonly entitymanager: EntityManager,
         private readonly markdownMentionService: MarkdownMentionService,
         private readonly opinionService: OpinionService,
+        private readonly hidesService: HidesService,
     ) {}
 
     async comment(
@@ -54,71 +55,39 @@ export class ArticleService {
                     ),
                 }),
             ],
-            hides: [
-                this.articleHideRepository.create({
-                    editedBy: currentUser,
-                }),
-            ],
-            author: currentUser,
+            hideTarget: this.entitymanager.create(HideTargetEntity),
             opinionTarget: this.entitymanager.create(OpinionTargetEntity),
+            author: currentUser,
         });
     }
 
-    private newestPart(id: string) {
-        return {
-            where: {
-                article: {
-                    id,
-                },
-            },
-            relations: {
-                article: true,
-            },
-            order: {
-                editedAt: 'DESC',
-            },
-        } as const;
-    }
+    async toogleHide(
+        currentUser: CurrentUser,
+        id: string,
+        createHideInput: CreateHideInput,
+    ) {
+        const article = await this.articleRepository.findOneOrFail({
+            where: { id },
+        });
 
-    async changeVisibility(currentUser: CurrentUser, id: string) {
-        const articleHide = await this.articleHideRepository.findOneOrFail(
-            this.newestPart(id),
+        return this.hidesService.toogleHide(
+            currentUser,
+            article.hideTarget.id,
+            createHideInput,
         );
-
-        await this.articleHideRepository.save({
-            isHiden: !articleHide.isHiden,
-            editedBy: currentUser,
-            article: articleHide.article,
-        });
-
-        return articleHide.article;
     }
 
     async findOne(id: string, currentUser?: CurrentUser) {
-        const findConfig: {
+        return this.articleRepository.findOneOrFail({
             where: {
-                article: {
-                    id: string;
-                    isHiden?: false;
-                };
-            };
-            relations: {
-                article: true;
-            };
-            order: {
-                editedAt: 'DESC';
-            };
-        } = this.newestPart(id);
-
-        if (!currentUser || !canSeeHidenArticle(currentUser)) {
-            findConfig.where.article.isHiden = false;
-        }
-
-        const articleHide = await this.articleHideRepository.findOne(
-            findConfig,
-        );
-
-        return articleHide?.article;
+                id,
+                hideTarget: canSeeHidenArticle(currentUser)
+                    ? undefined
+                    : {
+                          isHiden: false,
+                      },
+            },
+        });
     }
 
     async update(
@@ -126,9 +95,20 @@ export class ArticleService {
         { id, ...updateArticleInput }: UpdateArticleInput,
     ) {
         const newestRevision =
-            await this.articleRevisionRepository.findOneOrFail(
-                this.newestPart(id),
-            );
+            await this.articleRevisionRepository.findOneOrFail({
+                where: {
+                    article: {
+                        id,
+                    },
+                },
+                relations: {
+                    article: true,
+                },
+                order: {
+                    editedAt: 'DESC',
+                },
+            });
+        const { article } = newestRevision;
 
         return this.articleRevisionRepository.manager.transaction(
             async (manager) => {
@@ -136,10 +116,9 @@ export class ArticleService {
                     ...newestRevision,
                     ...updateArticleInput,
                     editedBy: currentUser,
-                    article: newestRevision.article,
                 };
 
-                newestRevision.article.lastRevision = await manager.save(
+                article.lastRevision = await manager.save(
                     ArticleRevisionEntity,
                     {
                         ...revision,
@@ -149,7 +128,7 @@ export class ArticleService {
                     },
                 );
 
-                return manager.save(ArticleEntity, newestRevision.article);
+                return manager.save(ArticleEntity, article);
             },
         );
     }

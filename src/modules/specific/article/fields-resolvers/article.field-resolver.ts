@@ -1,5 +1,7 @@
 import { Args, Parent, ResolveField, Resolver } from '@nestjs/graphql';
 import { PageInput } from 'common/dto/page';
+import { HideEntity } from 'modules/generic/hides/entities/hide.entity';
+import { HidesDataloader } from 'modules/generic/hides/hides.dataloader';
 import { OpinionEntity } from 'modules/generic/opinion/entities/opinion.entity';
 import { OpinionsDataloader } from 'modules/generic/opinion/opinion.dataloader';
 import { Dataloader } from 'modules/infrastructure/dataloader/dataloader.decorator';
@@ -39,6 +41,15 @@ export class ArticleFieldResolver {
         @Dataloader() dataloader: ArticleRevisionsDataloader,
     ): Promise<ArticleRevisionEntity[]> {
         return dataloader.load({ id: article.id, page });
+    }
+
+    @ResolveField(() => [HideEntity])
+    hides(
+        @Parent() article: ArticleEntity,
+        @Args('page') page: PageInput,
+        @Dataloader() dataloader: HidesDataloader,
+    ): Promise<HideEntity[]> {
+        return dataloader.load({ id: article.hideTarget.id, page });
     }
 
     @ResolveField(() => ArticleRevisionEntity)

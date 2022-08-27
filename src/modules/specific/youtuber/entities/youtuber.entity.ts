@@ -26,6 +26,7 @@ export class YoutuberEntity {
     revisions: YoutuberRevisionEntity[];
 
     @OneToOne(() => OpinionTargetEntity, { cascade: true, eager: true })
+    @JoinColumn()
     @HideField()
     opinionTarget: OpinionTargetEntity;
 }
