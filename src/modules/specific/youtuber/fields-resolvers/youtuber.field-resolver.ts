@@ -23,7 +23,7 @@ export class YoutuberFieldResolver {
     }
 
     @ResolveField(() => YoutuberRevisionEntity)
-    content(
+    newestContent(
         @Parent() youtuber: YoutuberEntity,
         @Dataloader() dataloader: YoutuberContentDataloader,
     ): Promise<YoutuberRevisionEntity> {

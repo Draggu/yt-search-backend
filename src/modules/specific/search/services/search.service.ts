@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { PageInput } from 'common/dto/page';
 import { CurrentUser } from 'directives/auth/types';
+import { canSeeHiden } from 'helpers/can-see-hidden';
 import { filterBoolean } from 'helpers/filter-boolean';
-import { canSeeHidenArticle } from 'modules/specific/article/helpers/can-see-hidden';
 import { DataSource } from 'typeorm';
 import { ArticleEntity } from '../../article/entities/article.entity';
 import { ChannelEntity } from '../../channel/entities/channel.entity';
@@ -62,10 +62,10 @@ export class SearchService {
                 query,
             );
 
-        if (articleQb && !canSeeHidenArticle(currentUser)) {
+        if (articleQb && !canSeeHiden(currentUser)) {
             articleQb
                 .leftJoin('main.hideTarget', 'hide')
-                .andWhere('"isHiden" = false');
+                .andWhere('hide."isHiden" = false');
         }
 
         const [unionQuery, parameters] = this.queryService.createUnion(

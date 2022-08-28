@@ -23,7 +23,7 @@ export class ChannelFieldResolver {
     }
 
     @ResolveField(() => ChannelRevisionEntity)
-    content(
+    newestContent(
         @Parent() channel: ChannelEntity,
         @Dataloader() dataloader: ChannelContentDataloader,
     ): Promise<ChannelRevisionEntity> {

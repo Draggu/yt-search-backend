@@ -128,7 +128,9 @@ export class SearchQueryService {
             .from(entity, 'main')
             .leftJoin('main.lastRevision', 'rev')
             .leftJoin('main.opinionTarget', 'op_target')
-            .leftJoin('op_target.opinions', 'opinions');
+            .leftJoin('op_target.opinions', 'opinions')
+            .leftJoin('opinions.hideTarget', 'opinions_hide')
+            .andWhere('opinions_hide."isHiden" = false');
 
         this.createWhere(qb, columns, fields, query);
 

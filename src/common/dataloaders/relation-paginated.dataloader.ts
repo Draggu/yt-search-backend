@@ -32,7 +32,7 @@ export const RelationPaginatedDataloader = <T>(
                                             `ORDER BY entity."${orderBy.column}" ${orderBy.order}` +
                                             ') as "R"',
                                     ),
-                            `entities_with_rank`,
+                            'entities_with_rank',
                         );
 
                     keys.forEach(({ id, page: { skip, take } }) => {
@@ -41,13 +41,13 @@ export const RelationPaginatedDataloader = <T>(
                             {
                                 id,
                                 skip,
-                                take: take + take * skip,
+                                take,
                             },
                         );
                     });
 
                     const entitiesByforeignKeyColumn = _.groupBy(
-                        await qb.getRawMany(),
+                        await qb.getRawMany<T>(),
                         foreignKeyColumn,
                     );
 

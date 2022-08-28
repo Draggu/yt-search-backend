@@ -9,10 +9,10 @@ import { CreateOpinionInput } from 'modules/generic/opinion/dto/create-opinion.i
 import { OpinionTargetEntity } from 'modules/generic/opinion/entities/opinion-target.entity';
 import { OpinionService } from 'modules/generic/opinion/opinion.service';
 import { EntityManager, Repository } from 'typeorm';
+import { canSeeHiden } from '../../../helpers/can-see-hidden';
 import { CreateArticleInput, UpdateArticleInput } from './dto/article.input';
 import { ArticleRevisionEntity } from './entities/article-revision.entity';
 import { ArticleEntity } from './entities/article.entity';
-import { canSeeHidenArticle } from './helpers/can-see-hidden';
 
 @Injectable()
 export class ArticleService {
@@ -81,7 +81,7 @@ export class ArticleService {
         return this.articleRepository.findOneOrFail({
             where: {
                 id,
-                hideTarget: canSeeHidenArticle(currentUser)
+                hideTarget: canSeeHiden(currentUser)
                     ? undefined
                     : {
                           isHiden: false,

@@ -14,7 +14,7 @@ export const RelationDataloader = <
     relation: R,
 ) => {
     @Injectable()
-    class _ToOneRelationDataloader extends DataLoader<string, E[R]> {
+    class RelationDataloader extends DataLoader<string, E[R]> {
         constructor(
             @InjectEntityManager()
             readonly entityManager: EntityManager,
@@ -22,8 +22,8 @@ export const RelationDataloader = <
             super(async (ids) => {
                 const results = await entityManager
                     .createQueryBuilder(Entity, 'entity')
-                    .select([`entity.${id}`])
-                    .leftJoinAndSelect('entity.' + relation, 'relation')
+                    .select(`entity.${id}`)
+                    .leftJoinAndSelect(`entity.${relation}`, 'relation')
                     .where(`entity.${id} IN (:...ids)`, { ids })
                     .getMany();
 
@@ -34,5 +34,5 @@ export const RelationDataloader = <
         }
     }
 
-    return _ToOneRelationDataloader;
+    return RelationDataloader;
 };

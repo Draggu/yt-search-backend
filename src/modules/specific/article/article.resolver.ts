@@ -73,7 +73,7 @@ export class ArticleResolver {
     @Mutation(() => HideEntity)
     toogleArticleHide(
         @Auth({
-            permissions: [Permissions.EDIT_ARTICLE],
+            permissions: [Permissions.TOGGLE_HIDE],
         })
         currentUser: CurrentUser,
         @Args('id', { type: () => ID }) id: string,

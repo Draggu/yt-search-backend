@@ -53,10 +53,15 @@ export class ArticleFieldResolver {
     }
 
     @ResolveField(() => ArticleRevisionEntity)
-    content(
+    newestContent(
         @Parent() article: ArticleEntity,
         @Dataloader() dataloader: ArticleContentDataloader,
     ): Promise<ArticleRevisionEntity> {
         return dataloader.load(article.id);
+    }
+
+    @ResolveField(() => Boolean)
+    isHiden(@Parent() article: ArticleEntity): boolean {
+        return article.hideTarget.isHiden;
     }
 }

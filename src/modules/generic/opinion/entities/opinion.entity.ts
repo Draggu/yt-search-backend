@@ -1,10 +1,13 @@
 import { Field, HideField, ID, Int, ObjectType } from '@nestjs/graphql';
+import { HideTargetEntity } from 'modules/generic/hides/entities/hide-target.entity';
 import { UserEntity } from 'modules/specific/user/entities/user.entity';
 import {
     Check,
     Column,
     Entity,
+    JoinColumn,
     ManyToOne,
+    OneToOne,
     PrimaryGeneratedColumn,
 } from 'typeorm';
 import { OpinionTargetEntity } from './opinion-target.entity';
@@ -43,4 +46,9 @@ export class OpinionEntity {
     @ManyToOne(() => UserEntity)
     @HideField()
     author?: UserEntity;
+
+    @OneToOne(() => HideTargetEntity, { cascade: true, eager: true })
+    @JoinColumn()
+    @HideField()
+    hideTarget: HideTargetEntity;
 }

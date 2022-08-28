@@ -12,6 +12,7 @@ export interface AuthProperties {
 export enum Permissions {
     PROPOSE = 'PROPOSE',
     COMMENT = 'COMMENT',
+    TOGGLE_HIDE = 'TOGGLE_HIDE',
     ACCEPT_PROPOSAL = 'ACCEPT_PROPOSAL',
     WRITE_ARTICLE = 'WRITE_ARTICLE',
     EDIT_ARTICLE = 'EDIT_ARTICLE',

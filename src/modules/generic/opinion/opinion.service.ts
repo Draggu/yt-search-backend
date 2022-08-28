@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import { CurrentUser } from 'directives/auth/types';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
+import { CreateHideInput } from '../hides/dto/create-hide.input';
+import { HideTargetEntity } from '../hides/entities/hide-target.entity';
+import { HidesService } from '../hides/hides.service';
 import { CreateOpinionInput } from './dto/create-opinion.input';
 import { OpinionEntity } from './entities/opinion.entity';
 
@@ -10,6 +13,8 @@ export class OpinionService {
     constructor(
         @InjectRepository(OpinionEntity)
         private readonly opinionRepository: Repository<OpinionEntity>,
+        @InjectEntityManager() private readonly entityManager: EntityManager,
+        private readonly hidesService: HidesService,
     ) {}
 
     create(
@@ -23,6 +28,23 @@ export class OpinionService {
             target: {
                 id: opinionTargetId,
             },
+            hideTarget: this.entityManager.create(HideTargetEntity),
         });
+    }
+
+    async toogleHide(
+        currentUser: CurrentUser,
+        id: string,
+        createHideInput: CreateHideInput,
+    ) {
+        const opinion = await this.opinionRepository.findOneOrFail({
+            where: { id },
+        });
+
+        return this.hidesService.toogleHide(
+            currentUser,
+            opinion.hideTarget.id,
+            createHideInput,
+        );
     }
 }
