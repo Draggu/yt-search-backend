@@ -2,11 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
 import { CurrentUser } from 'directives/auth/types';
 import { CreateHideInput } from 'modules/generic/hides/dto/create-hide.input';
-import { HideTargetEntity } from 'modules/generic/hides/entities/hide-target.entity';
 import { HidesService } from 'modules/generic/hides/hides.service';
 import { MarkdownMentionService } from 'modules/generic/markdown-mention/markdown-mention.service';
 import { CreateOpinionInput } from 'modules/generic/opinion/dto/create-opinion.input';
-import { OpinionTargetEntity } from 'modules/generic/opinion/entities/opinion-target.entity';
 import { OpinionService } from 'modules/generic/opinion/opinion.service';
 import { EntityManager, Repository } from 'typeorm';
 import { canSeeHiden } from '../../../helpers/can-see-hidden';
@@ -21,7 +19,7 @@ export class ArticleService {
         private readonly articleRepository: Repository<ArticleEntity>,
         @InjectRepository(ArticleRevisionEntity)
         private readonly articleRevisionRepository: Repository<ArticleRevisionEntity>,
-        @InjectEntityManager() private readonly entitymanager: EntityManager,
+        @InjectEntityManager() private readonly entityManager: EntityManager,
         private readonly markdownMentionService: MarkdownMentionService,
         private readonly opinionService: OpinionService,
         private readonly hidesService: HidesService,
@@ -32,32 +30,39 @@ export class ArticleService {
         createOpinionInput: CreateOpinionInput,
         currentUser?: CurrentUser,
     ) {
+        const article = await this.articleRepository.findOneOrFail({
+            where: { id: articleId },
+        });
+
         return this.opinionService.create(
             createOpinionInput,
-            await this.articleRepository
-                .findOneOrFail({ where: { id: articleId } })
-                .then((article) => article.opinionTarget.id),
+            article.opinionTarget.id,
             currentUser,
         );
     }
 
-    async create(
-        currentUser: CurrentUser,
-        createArticleInput: CreateArticleInput,
-    ) {
-        return this.articleRepository.save({
-            revisions: [
-                this.articleRevisionRepository.create({
-                    ...createArticleInput,
-                    editedBy: currentUser,
-                    mentions: await this.markdownMentionService.getMentions(
-                        createArticleInput.content,
-                    ),
-                }),
-            ],
-            hideTarget: this.entitymanager.create(HideTargetEntity),
-            opinionTarget: this.entitymanager.create(OpinionTargetEntity),
-            author: currentUser,
+    create(currentUser: CurrentUser, createArticleInput: CreateArticleInput) {
+        return this.entityManager.transaction(async (manager) => {
+            const article = await manager.save(ArticleEntity, {
+                hideTarget: this.hidesService.createTarget(),
+                opinionTarget: this.opinionService.createTarget(),
+                author: currentUser,
+            });
+
+            const revision = await manager.save(ArticleRevisionEntity, {
+                ...createArticleInput,
+                editedBy: currentUser,
+                mentions: await this.markdownMentionService.getMentions(
+                    createArticleInput.content,
+                ),
+                article,
+            });
+
+            article.lastRevision = revision;
+
+            await manager.save(ArticleEntity, article);
+
+            return article;
         });
     }
 

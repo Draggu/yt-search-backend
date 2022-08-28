@@ -130,7 +130,7 @@ export class SearchQueryService {
             .leftJoin('main.opinionTarget', 'op_target')
             .leftJoin('op_target.opinions', 'opinions')
             .leftJoin('opinions.hideTarget', 'opinions_hide')
-            .andWhere('opinions_hide."isHiden" = false');
+            .andWhere('opinions_hide."isHiden" IS NOT TRUE');
 
         this.createWhere(qb, columns, fields, query);
 

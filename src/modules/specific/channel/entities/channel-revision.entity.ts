@@ -16,7 +16,6 @@ import {
     ManyToOne,
     OneToOne,
     PrimaryGeneratedColumn,
-    RelationId,
 } from 'typeorm';
 import { ChannelEntity } from './channel.entity';
 
@@ -65,10 +64,6 @@ export class ChannelRevisionEntity extends ChannelRevisionProposalEntity {
     @JoinColumn()
     @HideField()
     channel: ChannelEntity;
-
-    @RelationId((revision: ChannelRevisionEntity) => revision.channel)
-    @HideField()
-    channelId: string;
 
     @ManyToOne(() => UserEntity, {
         nullable: false,

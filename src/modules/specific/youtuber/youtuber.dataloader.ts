@@ -8,7 +8,7 @@ import { YoutuberEntity } from './entities/youtuber.entity';
 @Injectable()
 export class YoutuberRevisionsDataloader extends RelationPaginatedDataloader(
     YoutuberRevisionEntity,
-    'youtuberId',
+    'youtuber',
     {
         column: 'editedAt',
         order: 'DESC',
@@ -31,4 +31,11 @@ export class YoutuberContentDataloader extends RelationDataloader(
     YoutuberEntity,
     'id',
     'lastRevision',
+) {}
+
+@Injectable()
+export class YoutuberOpinionsTargetDataloader extends RelationDataloader(
+    YoutuberEntity,
+    'id',
+    'opinionTarget',
 ) {}

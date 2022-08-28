@@ -19,3 +19,10 @@ export class OpinionsDataloader extends RelationPaginatedDataloader(
         order: 'DESC',
     },
 ) {}
+
+@Injectable()
+export class OpinionHidesTargetDataloader extends RelationDataloader(
+    OpinionEntity,
+    'id',
+    'hideTarget',
+) {}

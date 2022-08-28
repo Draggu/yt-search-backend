@@ -16,6 +16,12 @@ export const RelationPaginatedDataloader = <T>(
         string
     > {
         constructor(readonly dataSource: DataSource) {
+            const fnKeyColumn =
+                dataSource
+                    .getMetadata(entity)
+                    .findColumnWithPropertyPath(foreignKeyColumn)
+                    ?.databaseName || foreignKeyColumn;
+
             super(
                 async (keys) => {
                     const qb = this.dataSource
@@ -27,40 +33,35 @@ export const RelationPaginatedDataloader = <T>(
                                     .select('*')
                                     .from(entity, 'entity')
                                     .addSelect(
-                                        'RANK() over (' +
-                                            `PARTITION BY entity."${foreignKeyColumn}"` +
+                                        'ROW_NUMBER() over (' +
+                                            `PARTITION BY entity."${fnKeyColumn}" ` +
                                             `ORDER BY entity."${orderBy.column}" ${orderBy.order}` +
-                                            ') as "R"',
+                                            ') as r',
                                     ),
-                            'entities_with_rank',
+                            'entities_with_number',
                         );
 
                     keys.forEach(({ id, page: { skip, take } }) => {
                         qb.orWhere(
-                            `("${foreignKeyColumn}" = :id AND "R" > :skip AND "R" <= :take)`,
+                            `("${fnKeyColumn}" = :id AND r > :skip AND r <= :take)`,
                             {
                                 id,
                                 skip,
-                                take,
+                                take: take + skip,
                             },
                         );
                     });
 
-                    const entitiesByforeignKeyColumn = _.groupBy(
+                    const entitiesBykey = _.groupBy(
                         await qb.getRawMany<T>(),
-                        foreignKeyColumn,
+                        fnKeyColumn,
                     );
 
-                    return keys.map(
-                        ({ id: foreignKeyColumn }) =>
-                            entitiesByforeignKeyColumn[foreignKeyColumn] || [],
-                    );
+                    return keys.map(({ id }) => entitiesBykey[id] || []);
                 },
                 {
-                    cacheKeyFn: ({
-                        id: foreignKeyColumn,
-                        page: { skip, take },
-                    }) => `${foreignKeyColumn}_${skip}_${take}`,
+                    cacheKeyFn: ({ id, page: { skip, take } }) =>
+                        `${id}_${skip}_${take}`,
                 },
             );
         }

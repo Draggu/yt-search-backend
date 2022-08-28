@@ -13,6 +13,10 @@ export class HidesService {
         @InjectEntityManager() private readonly entityManager: EntityManager,
     ) {}
 
+    createTarget() {
+        return this.entityManager.create(HideTargetEntity);
+    }
+
     toogleHide(
         currentUser: CurrentUser,
         targetId: string,

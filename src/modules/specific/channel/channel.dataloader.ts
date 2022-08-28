@@ -8,7 +8,7 @@ import { ChannelEntity } from './entities/channel.entity';
 @Injectable()
 export class ChannelRevisionsDataloader extends RelationPaginatedDataloader(
     ChannelRevisionEntity,
-    'channelId',
+    'channel',
     {
         column: 'editedAt',
         order: 'DESC',
@@ -31,4 +31,11 @@ export class ChannelContentDataloader extends RelationDataloader(
     ChannelEntity,
     'ytId',
     'lastRevision',
+) {}
+
+@Injectable()
+export class ChannelOpinionsTargetDataloader extends RelationDataloader(
+    ChannelEntity,
+    'ytId',
+    'opinionTarget',
 ) {}

@@ -1,5 +1,5 @@
 import { HideField, ObjectType } from '@nestjs/graphql';
-import { Column, Entity, JoinColumn, ManyToOne, RelationId } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { YoutuberRevisionProposalEntity } from './youtuber-revision.entity';
 import { YoutuberEntity } from './youtuber.entity';
 
@@ -14,9 +14,4 @@ export class YoutuberProposalEntity extends YoutuberRevisionProposalEntity {
     @JoinColumn()
     @HideField()
     youtuber?: YoutuberEntity;
-
-    @RelationId(
-        (youtuberProposal: YoutuberProposalEntity) => youtuberProposal.youtuber,
-    )
-    youtuberId?: string;
 }

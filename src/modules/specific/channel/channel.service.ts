@@ -4,7 +4,6 @@ import { PageInput } from 'common/dto/page';
 import { CurrentUser } from 'directives/auth/types';
 import { MarkdownMentionService } from 'modules/generic/markdown-mention/markdown-mention.service';
 import { CreateOpinionInput } from 'modules/generic/opinion/dto/create-opinion.input';
-import { OpinionTargetEntity } from 'modules/generic/opinion/entities/opinion-target.entity';
 import { OpinionService } from 'modules/generic/opinion/opinion.service';
 import { socialMedia2Map } from 'modules/generic/social-media/helpers/to-map';
 import { Youtube } from 'modules/infrastructure/youtube-api/youtube-api.module';
@@ -117,7 +116,7 @@ export class ChannelService {
                             name: await this.fetchChannelFromYT(ytId).then(
                                 ({ title }) => title!,
                             ),
-                            opinionTarget: manager.create(OpinionTargetEntity),
+                            opinionTarget: this.opinionService.createTarget(),
                         }),
                 );
 

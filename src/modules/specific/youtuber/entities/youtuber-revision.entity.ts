@@ -16,7 +16,6 @@ import {
     ManyToOne,
     OneToOne,
     PrimaryGeneratedColumn,
-    RelationId,
 } from 'typeorm';
 import { YoutuberEntity } from './youtuber.entity';
 
@@ -70,10 +69,6 @@ export class YoutuberRevisionEntity extends YoutuberRevisionProposalEntity {
     @ManyToOne(() => YoutuberEntity)
     @HideField()
     youtuber: YoutuberEntity;
-
-    @RelationId((revision: YoutuberRevisionEntity) => revision.youtuber)
-    @HideField()
-    youtuberId: string;
 
     @ManyToOne(() => UserEntity, {
         nullable: false,

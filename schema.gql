@@ -271,13 +271,13 @@ input ProposeYoutuberInput {
 
 type Query {
   """
-  if authed user permissions include EDIT_ARTICLE hiden articles will be shown
+  if authed user permissions include TOGGLE_HIDE hiden articles will be shown
   """
   article(id: ID!): ArticleEntity @auth(optional: true)
   channel(ytId: ID!): Channel
   channelProposals(page: PageInput!, ytId: ID): [ChannelProposal!]! @auth(permissions: [ACCEPT_PROPOSAL])
   """
-  if authed user permissions include EDIT_ARTICLE hiden articles will be shown
+  if authed user permissions include TOGGLE_HIDE hiden articles will be shown
   """
   search(page: PageInput!, search: SearchInput!): [SearchResult!]! @auth(optional: true)
   """
@@ -417,7 +417,6 @@ type YoutuberProposal {
   name: String!
   realName: String
   socialMedia: [SocialMediaEntity!]!
-  youtuberId: String
 }
 
 type YoutuberRevisionEntity {

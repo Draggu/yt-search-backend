@@ -13,7 +13,10 @@ import { UserEntity } from 'modules/specific/user/entities/user.entity';
 import { CreateHideInput } from '../hides/dto/create-hide.input';
 import { HideEntity } from '../hides/entities/hide.entity';
 import { OpinionEntity } from './entities/opinion.entity';
-import { OpinionAuthorDataloader } from './opinion.dataloader';
+import {
+    OpinionAuthorDataloader,
+    OpinionHidesTargetDataloader,
+} from './opinion.dataloader';
 import { OpinionService } from './opinion.service';
 
 @Resolver(() => OpinionEntity)
@@ -29,8 +32,11 @@ export class OpinionResolver {
     }
 
     @ResolveField(() => Boolean)
-    isHiden(@Parent() opinion: OpinionEntity): boolean {
-        return opinion.hideTarget.isHiden;
+    isHiden(
+        @Parent() opinion: OpinionEntity,
+        @Dataloader() dataloader: OpinionHidesTargetDataloader,
+    ): Promise<boolean> {
+        return dataloader.load(opinion.id).then(({ isHiden }) => isHiden);
     }
 
     @Mutation(() => HideEntity)

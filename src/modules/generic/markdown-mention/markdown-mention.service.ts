@@ -70,7 +70,7 @@ export class MarkdownMentionService {
     ) {
         const entities = await this.entityManager
             .createQueryBuilder(entity, 'e')
-            .select(id)
+            .select(`"${id}"`)
             .whereInIds(ids)
             .getMany();
 

@@ -29,15 +29,14 @@ export class ArticleEntity {
     @HideField()
     author: UserEntity;
 
-    @OneToOne(() => ArticleRevisionEntity)
+    @OneToOne(() => ArticleRevisionEntity, {
+        nullable: true,
+    })
     @JoinColumn()
     @HideField()
     lastRevision: ArticleRevisionEntity;
 
-    @OneToMany(() => ArticleRevisionEntity, (revision) => revision.article, {
-        cascade: true,
-        nullable: false,
-    })
+    @OneToMany(() => ArticleRevisionEntity, (revision) => revision.article)
     @HideField()
     revisions: ArticleRevisionEntity[];
 

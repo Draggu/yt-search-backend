@@ -6,6 +6,7 @@ import { Dataloader } from 'modules/infrastructure/dataloader/dataloader.decorat
 import { Skip1MorePipe } from 'pipes/skip-1-more.pipe';
 import {
     ChannelContentDataloader,
+    ChannelOpinionsTargetDataloader,
     ChannelRevisionsDataloader,
 } from '../channel.dataloader';
 import { ChannelRevisionEntity } from '../entities/channel-revision.entity';
@@ -31,11 +32,17 @@ export class ChannelFieldResolver {
     }
 
     @ResolveField(() => [OpinionEntity])
-    opinions(
+    async opinions(
         @Parent() channel: ChannelEntity,
         @Args('page') page: PageInput,
-        @Dataloader() dataloader: OpinionsDataloader,
+        @Dataloader() opinionsTargetdataloader: ChannelOpinionsTargetDataloader,
+        @Dataloader() opinionsDataloader: OpinionsDataloader,
     ): Promise<OpinionEntity[]> {
-        return dataloader.load({ id: channel.opinionTarget.id, page });
+        const { id } = await opinionsTargetdataloader.load(channel.ytId);
+
+        return opinionsDataloader.load({
+            id,
+            page,
+        });
     }
 }

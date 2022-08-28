@@ -4,7 +4,6 @@ import { PageInput } from 'common/dto/page';
 import { CurrentUser } from 'directives/auth/types';
 import { MarkdownMentionService } from 'modules/generic/markdown-mention/markdown-mention.service';
 import { CreateOpinionInput } from 'modules/generic/opinion/dto/create-opinion.input';
-import { OpinionTargetEntity } from 'modules/generic/opinion/entities/opinion-target.entity';
 import { OpinionService } from 'modules/generic/opinion/opinion.service';
 import { socialMedia2Map } from 'modules/generic/social-media/helpers/to-map';
 import { EntityManager, Repository } from 'typeorm';
@@ -73,10 +72,16 @@ export class YoutuberService {
             relations: {
                 editedBy: true,
                 categories: true,
+                youtuber: true,
             },
         });
 
-        const { youtuberId, id: _, isRejected: __, ...revisionData } = proposal;
+        const {
+            youtuber: _youtuber,
+            id: _,
+            isRejected: __,
+            ...revisionData
+        } = proposal;
 
         const revision = edit
             ? {
@@ -99,24 +104,14 @@ export class YoutuberService {
               };
 
         return this.entityManager.transaction(async (manager) => {
-            const orCreate = (youtuber: YoutuberEntity | null) =>
-                youtuber ||
-                manager.save(
+            const youtuber =
+                _youtuber ||
+                (await manager.save(
                     YoutuberEntity,
                     this.youtuberRepository.create({
-                        opinionTarget: manager.create(OpinionTargetEntity),
+                        opinionTarget: this.opinionService.createTarget(),
                     }),
-                );
-
-            const youtuber = youtuberId
-                ? await manager
-                      .findOne(YoutuberEntity, {
-                          where: {
-                              id: youtuberId,
-                          },
-                      })
-                      .then(orCreate)
-                : await orCreate(null);
+                ));
 
             await manager.remove(YoutuberProposalEntity, proposal);
 

@@ -21,6 +21,7 @@ export class OpinionEntity {
     id: string;
 
     @ManyToOne(() => OpinionTargetEntity)
+    @JoinColumn()
     @HideField()
     target: OpinionTargetEntity;
 

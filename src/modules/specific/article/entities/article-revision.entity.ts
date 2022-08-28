@@ -11,7 +11,6 @@ import {
     ManyToMany,
     ManyToOne,
     PrimaryGeneratedColumn,
-    RelationId,
 } from 'typeorm';
 import { ArticleEntity } from './article.entity';
 
@@ -22,14 +21,13 @@ export class ArticleRevisionEntity {
     @Field(() => ID)
     id: string;
 
-    @ManyToOne(() => ArticleEntity)
+    @ManyToOne(() => ArticleEntity, {
+        cascade: true,
+        nullable: false,
+    })
     @JoinColumn()
     @HideField()
     article: ArticleEntity;
-
-    @RelationId((revision: ArticleRevisionEntity) => revision.article)
-    @HideField()
-    articleId: string;
 
     @Column({
         default: () => 'NOW()',

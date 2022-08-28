@@ -65,7 +65,7 @@ export class SearchService {
         if (articleQb && !canSeeHiden(currentUser)) {
             articleQb
                 .leftJoin('main.hideTarget', 'hide')
-                .andWhere('hide."isHiden" = false');
+                .andWhere('hide."isHiden" IS NOT TRUE');
         }
 
         const [unionQuery, parameters] = this.queryService.createUnion(

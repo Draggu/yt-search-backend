@@ -15,7 +15,7 @@ export class ArticleAuthorDataloader extends RelationDataloader(
 @Injectable()
 export class ArticleRevisionsDataloader extends RelationPaginatedDataloader(
     ArticleRevisionEntity,
-    'articleId',
+    'article',
     {
         column: 'editedAt',
         order: 'DESC',
@@ -39,4 +39,18 @@ export class ArticleContentDataloader extends RelationDataloader(
     ArticleEntity,
     'id',
     'lastRevision',
+) {}
+
+@Injectable()
+export class ArticleOpinionsTargetDataloader extends RelationDataloader(
+    ArticleEntity,
+    'id',
+    'opinionTarget',
+) {}
+
+@Injectable()
+export class ArticleHidesTargetDataloader extends RelationDataloader(
+    ArticleEntity,
+    'id',
+    'hideTarget',
 ) {}

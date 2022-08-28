@@ -8,6 +8,7 @@ import { YoutuberRevisionEntity } from '../entities/youtuber-revision.entity';
 import { YoutuberEntity } from '../entities/youtuber.entity';
 import {
     YoutuberContentDataloader,
+    YoutuberOpinionsTargetDataloader,
     YoutuberRevisionsDataloader,
 } from '../youtuber.dataloader';
 
@@ -31,11 +32,18 @@ export class YoutuberFieldResolver {
     }
 
     @ResolveField(() => [OpinionEntity])
-    opinions(
+    async opinions(
         @Parent() youtuber: YoutuberEntity,
         @Args('page') page: PageInput,
-        @Dataloader() dataloader: OpinionsDataloader,
+        @Dataloader()
+        opinionsTargetdataloader: YoutuberOpinionsTargetDataloader,
+        @Dataloader() opinionsDataloader: OpinionsDataloader,
     ): Promise<OpinionEntity[]> {
-        return dataloader.load({ id: youtuber.opinionTarget.id, page });
+        const { id } = await opinionsTargetdataloader.load(youtuber.id);
+
+        return opinionsDataloader.load({
+            id,
+            page,
+        });
     }
 }

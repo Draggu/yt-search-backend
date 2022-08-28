@@ -10,6 +10,8 @@ import { Skip1MorePipe } from 'pipes/skip-1-more.pipe';
 import {
     ArticleAuthorDataloader,
     ArticleContentDataloader,
+    ArticleHidesTargetDataloader,
+    ArticleOpinionsTargetDataloader,
     ArticleRevisionsDataloader,
 } from '../article.dataloader';
 import { ArticleRevisionEntity } from '../entities/article-revision.entity';
@@ -26,12 +28,18 @@ export class ArticleFieldResolver {
     }
 
     @ResolveField(() => [OpinionEntity])
-    opinions(
+    async opinions(
         @Parent() article: ArticleEntity,
         @Args('page') page: PageInput,
-        @Dataloader() dataloader: OpinionsDataloader,
+        @Dataloader() opinionsTargetdataloader: ArticleOpinionsTargetDataloader,
+        @Dataloader() opinionsDataloader: OpinionsDataloader,
     ): Promise<OpinionEntity[]> {
-        return dataloader.load({ id: article.opinionTarget.id, page });
+        const { id } = await opinionsTargetdataloader.load(article.id);
+
+        return opinionsDataloader.load({
+            id,
+            page,
+        });
     }
 
     @ResolveField(() => [ArticleRevisionEntity])
@@ -44,12 +52,18 @@ export class ArticleFieldResolver {
     }
 
     @ResolveField(() => [HideEntity])
-    hides(
+    async hides(
         @Parent() article: ArticleEntity,
         @Args('page') page: PageInput,
-        @Dataloader() dataloader: HidesDataloader,
+        @Dataloader() hidesDataloader: HidesDataloader,
+        @Dataloader() hidesTargetdataloader: ArticleHidesTargetDataloader,
     ): Promise<HideEntity[]> {
-        return dataloader.load({ id: article.hideTarget.id, page });
+        const { id } = await hidesTargetdataloader.load(article.id);
+
+        return hidesDataloader.load({
+            id,
+            page,
+        });
     }
 
     @ResolveField(() => ArticleRevisionEntity)

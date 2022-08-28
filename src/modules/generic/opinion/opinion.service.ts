@@ -1,9 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 import { CurrentUser } from 'directives/auth/types';
-import { EntityManager, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { CreateHideInput } from '../hides/dto/create-hide.input';
-import { HideTargetEntity } from '../hides/entities/hide-target.entity';
 import { HidesService } from '../hides/hides.service';
 import { CreateOpinionInput } from './dto/create-opinion.input';
 import { OpinionEntity } from './entities/opinion.entity';
@@ -13,9 +12,12 @@ export class OpinionService {
     constructor(
         @InjectRepository(OpinionEntity)
         private readonly opinionRepository: Repository<OpinionEntity>,
-        @InjectEntityManager() private readonly entityManager: EntityManager,
         private readonly hidesService: HidesService,
     ) {}
+
+    createTarget() {
+        return this.opinionRepository.create();
+    }
 
     create(
         createOpinionInput: CreateOpinionInput,
@@ -28,7 +30,7 @@ export class OpinionService {
             target: {
                 id: opinionTargetId,
             },
-            hideTarget: this.entityManager.create(HideTargetEntity),
+            hideTarget: this.hidesService.createTarget(),
         });
     }
 
