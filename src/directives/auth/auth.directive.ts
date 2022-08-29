@@ -6,7 +6,7 @@ import { Request } from 'express';
 import { isNonNullType } from 'graphql';
 import { filterBoolean } from 'helpers/filter-boolean';
 import { SchemaTransform } from 'helpers/schema/transform';
-import { TokenService } from 'modules/specific/auth/services/token.service';
+import { TokenService } from 'modules/domain/auth/services/token.service';
 import { currentUserSymbol, tokenSymbol, userPromiseSymbol } from './consts';
 import { confirmationRule } from './rules/confiramtion.rule';
 import { optionalRule } from './rules/optional.rule';

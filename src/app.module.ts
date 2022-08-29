@@ -7,13 +7,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { GraphQlModuleConfig } from 'config/graphql.module.config';
 import { TypeOrmModuleConfig } from 'config/typeorm.module.config';
 import { DirectivesModule } from 'directives/directives.module';
-import { ArticleModule } from 'modules/specific/article/article.module';
-import { AuthModule } from 'modules/specific/auth/auth.module';
-import { CategorieModule } from 'modules/specific/categorie/categorie.module';
-import { ChannelModule } from 'modules/specific/channel/channel.module';
-import { SearchModule } from 'modules/specific/search/search.module';
-import { UserModule } from 'modules/specific/user/user.module';
-import { YoutuberModule } from 'modules/specific/youtuber/youtuber.module';
+import { ArticleModule } from 'modules/domain/article/article.module';
+import { AuthModule } from 'modules/domain/auth/auth.module';
+import { CategorieModule } from 'modules/domain/categorie/categorie.module';
+import { ChannelModule } from 'modules/domain/channel/channel.module';
+import { SearchModule } from 'modules/domain/search/search.module';
+import { UserModule } from 'modules/domain/user/user.module';
+import { YoutuberModule } from 'modules/domain/youtuber/youtuber.module';
 
 @Module({
     imports: [

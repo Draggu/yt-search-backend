@@ -4,7 +4,7 @@ import * as DataLoader from 'dataloader';
 import { CurrentUser } from 'directives/auth/types';
 import { canSeeHiden } from 'helpers/can-see-hidden';
 import * as _ from 'lodash';
-import { HideTargetEntity } from 'modules/generic/hides/entities/hide-target.entity';
+import { HideTargetEntity } from 'modules/domain/hides/entities/hide-target.entity';
 import { DataSource } from 'typeorm';
 
 export const RelationPaginatedDataloader = <T>(
