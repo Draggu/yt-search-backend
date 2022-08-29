@@ -1,5 +1,7 @@
 import { Args, Parent, ResolveField, Resolver } from '@nestjs/graphql';
 import { PageInput } from 'common/dto/page';
+import { Auth } from 'directives/auth/decorators/auth.decorator';
+import { CurrentUser } from 'directives/auth/types';
 import { OpinionEntity } from 'modules/generic/opinion/entities/opinion.entity';
 import { OpinionsDataloader } from 'modules/generic/opinion/opinion.dataloader';
 import { Dataloader } from 'modules/infrastructure/dataloader/dataloader.decorator';
@@ -32,18 +34,23 @@ export class YoutuberFieldResolver {
     }
 
     @ResolveField(() => [OpinionEntity])
-    async opinions(
+    opinions(
         @Parent() youtuber: YoutuberEntity,
         @Args('page') page: PageInput,
         @Dataloader()
         opinionsTargetdataloader: YoutuberOpinionsTargetDataloader,
         @Dataloader() opinionsDataloader: OpinionsDataloader,
+        @Auth({
+            optional: true,
+        })
+        currentUser?: CurrentUser,
     ): Promise<OpinionEntity[]> {
-        const { id } = await opinionsTargetdataloader.load(youtuber.id);
-
-        return opinionsDataloader.load({
-            id,
-            page,
-        });
+        return opinionsTargetdataloader.load(youtuber.id).then(({ id }) =>
+            opinionsDataloader.load({
+                id,
+                page,
+                currentUser,
+            }),
+        );
     }
 }

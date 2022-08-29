@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MarkdownMentionModule } from 'modules/generic/markdown-mention/markdown-mention.module';
 import { OpinionModule } from 'modules/generic/opinion/opinion.module';
+import { CategorieModule } from '../categorie/categorie.module';
 import { YoutuberProposalEntity } from './entities/youtuber-proposal.entity';
 import { YoutuberRevisionEntity } from './entities/youtuber-revision.entity';
 import { YoutuberEntity } from './entities/youtuber.entity';
@@ -12,6 +13,7 @@ import { YoutuberService } from './youtuber.service';
 
 @Module({
     imports: [
+        CategorieModule,
         OpinionModule,
         TypeOrmModule.forFeature([
             YoutuberEntity,

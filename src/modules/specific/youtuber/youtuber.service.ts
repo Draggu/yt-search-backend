@@ -7,6 +7,7 @@ import { CreateOpinionInput } from 'modules/generic/opinion/dto/create-opinion.i
 import { OpinionService } from 'modules/generic/opinion/opinion.service';
 import { socialMedia2Map } from 'modules/generic/social-media/helpers/to-map';
 import { EntityManager, Repository } from 'typeorm';
+import { CategorieService } from '../categorie/categorie.service';
 import { ProposeYoutuberInput } from './dto/propose-youtuber.input';
 import { YoutuberProposalEntity } from './entities/youtuber-proposal.entity';
 import { YoutuberRevisionEntity } from './entities/youtuber-revision.entity';
@@ -22,6 +23,7 @@ export class YoutuberService {
         @InjectEntityManager() private readonly entityManager: EntityManager,
         private readonly markdownMentionService: MarkdownMentionService,
         private readonly opinionService: OpinionService,
+        private readonly categorieService: CategorieService,
     ) {}
 
     async comment(
@@ -90,7 +92,9 @@ export class YoutuberService {
                       edit.content,
                   ),
                   socialMedia: socialMedia2Map(edit.socialMedia),
-                  categories: edit.categories.map((id) => ({ id })),
+                  categories: await this.categorieService.assertAreLeafsAndMap(
+                      edit.categories,
+                  ),
                   originalEdit: {
                       ...revisionData,
                       acceptedBy: currentUser,
@@ -131,7 +135,9 @@ export class YoutuberService {
         return this.youtuberProposalRepository.save({
             ...propose,
             editedBy: currentUser,
-            categories: categories.map((id) => ({ id })),
+            categories: await this.categorieService.assertAreLeafsAndMap(
+                categories,
+            ),
             socialMedia: socialMedia2Map(socialMedia),
             mentions: await this.markdownMentionService.getMentions(
                 propose.content,

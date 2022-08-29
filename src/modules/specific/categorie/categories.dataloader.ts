@@ -12,7 +12,7 @@ export const CategoriesDataloader = <
     Entity: E,
 ) => {
     @Injectable()
-    class _CategoriesDataloader extends DataLoader<string, CategorieEntity[]> {
+    class CategoriesDataloader extends DataLoader<string, CategorieEntity[]> {
         constructor(@InjectEntityManager() entityManager: EntityManager) {
             super(async (ids) => {
                 const categories = await entityManager
@@ -38,5 +38,5 @@ export const CategoriesDataloader = <
         }
     }
 
-    return _CategoriesDataloader;
+    return CategoriesDataloader;
 };

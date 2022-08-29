@@ -3,6 +3,7 @@ import {
     Column,
     Entity,
     PrimaryGeneratedColumn,
+    RelationId,
     Tree,
     TreeChildren,
     TreeParent,
@@ -30,5 +31,6 @@ export class CategorieEntity {
     parent: CategorieEntity;
 
     @Field(() => ID)
+    @RelationId((categorie: CategorieEntity) => categorie.parent)
     parentId?: string | null;
 }

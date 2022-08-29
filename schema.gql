@@ -45,7 +45,7 @@ type ArticleEntity {
   id: ID!
   isHiden: Boolean!
   newestContent: ArticleRevisionEntity!
-  opinions(page: PageInput!): [OpinionEntity!]!
+  opinions(page: PageInput!): [OpinionEntity!]! @auth(optional: true)
   revisions(page: PageInput!): [ArticleRevisionEntity!]!
 }
 
@@ -117,7 +117,7 @@ type Channel {
   lastSyncWithYT: DateTime!
   name: String!
   newestContent: ChannelRevision!
-  opinions(page: PageInput!): [OpinionEntity!]!
+  opinions(page: PageInput!): [OpinionEntity!]! @auth(optional: true)
   revisions(page: PageInput!): [ChannelRevision!]!
   ytId: ID!
 }
@@ -195,14 +195,14 @@ type Mutation {
   acceptChannelProposal(edit: ProposeChannelInput, id: ID!): Channel! @auth(permissions: [ACCEPT_PROPOSAL])
   acceptYoutuberProposal(edit: ProposeYoutuberInput, id: ID!): YoutuberEntity! @auth(permissions: [ACCEPT_PROPOSAL])
   """user can not modify own permissions!"""
-  changePermissions(permissions: UpdatePermissionInput!): UserEntity! @recaptchaV3(actionName: "change-permissions") @auth(confirmationRequired: true, permissions: [MODIFY_PERMISSION])
+  changePermissions(permissions: UpdatePermissionInput!): UserEntity! @auth(confirmationRequired: true, permissions: [MODIFY_PERMISSION]) @recaptchaV3(actionName: "change-permissions")
   commentArticle(articleId: ID!, opinion: CreateOpinionInput!): OpinionEntity! @auth(optional: true, permissions: [COMMENT])
   commentChannel(channelId: ID!, opinion: CreateOpinionInput!): OpinionEntity! @auth(optional: true, permissions: [COMMENT])
   commentYoutuber(opinion: CreateOpinionInput!, youtuberId: ID!): OpinionEntity! @auth(optional: true, permissions: [COMMENT])
   createCategorie(createCategorieInput: CreateCategorieInput!): CategorieEntity!
-  destroyToken(logout: String!): TokenEntity! @recaptchaV3(actionName: "logout-device") @auth(confirmationRequired: true)
+  destroyToken(logout: String!): TokenEntity! @auth(confirmationRequired: true) @recaptchaV3(actionName: "logout-device")
   login(login: LoginInput!): AuthPayload! @recaptchaV3(actionName: "login")
-  logout: TokenEntity! @recaptchaV3(actionName: "logout") @auth
+  logout: TokenEntity! @auth @recaptchaV3(actionName: "logout")
   proposeChannel(proposal: ProposeChannelInput!): ChannelProposal! @auth
   proposeYoutuber(proposal: ProposeYoutuberInput!): YoutuberProposal! @auth
   register(register: RegisterInput!): AuthPayload! @recaptchaV3(actionName: "register")
@@ -405,7 +405,7 @@ type UserEntity {
 type YoutuberEntity {
   id: ID!
   newestContent: YoutuberRevisionEntity!
-  opinions(page: PageInput!): [OpinionEntity!]!
+  opinions(page: PageInput!): [OpinionEntity!]! @auth(optional: true)
   revisions(page: PageInput!): [YoutuberRevisionEntity!]!
 }
 

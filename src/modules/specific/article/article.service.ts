@@ -115,26 +115,21 @@ export class ArticleService {
             });
         const { article } = newestRevision;
 
-        return this.articleRevisionRepository.manager.transaction(
-            async (manager) => {
-                const revision = {
-                    ...newestRevision,
-                    ...updateArticleInput,
-                    editedBy: currentUser,
-                };
+        return this.entityManager.transaction(async (manager) => {
+            const revision = {
+                ...newestRevision,
+                ...updateArticleInput,
+                editedBy: currentUser,
+            };
 
-                article.lastRevision = await manager.save(
-                    ArticleRevisionEntity,
-                    {
-                        ...revision,
-                        mentions: await this.markdownMentionService.getMentions(
-                            revision.content,
-                        ),
-                    },
-                );
+            article.lastRevision = await manager.save(ArticleRevisionEntity, {
+                ...revision,
+                mentions: await this.markdownMentionService.getMentions(
+                    revision.content,
+                ),
+            });
 
-                return manager.save(ArticleEntity, article);
-            },
-        );
+            return manager.save(ArticleEntity, article);
+        });
     }
 }

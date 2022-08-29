@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
-import { EntityManager, Repository } from 'typeorm';
+import * as assert from 'assert';
+import { EntityManager, In, IsNull, Repository } from 'typeorm';
 import {
     CategorieCreationMode,
     CreateCategorieInput,
@@ -15,6 +16,22 @@ export class CategorieService {
         @InjectRepository(CategorieEntity)
         private readonly categorieRepository: Repository<CategorieEntity>,
     ) {}
+
+    async assertAreLeafsAndMap(ids: string[]) {
+        const leafsCategories = await this.categorieRepository.count({
+            where: {
+                id: In(ids),
+                parent: IsNull(),
+            },
+        });
+
+        assert(
+            leafsCategories === new Set(ids).size,
+            'categorie is not leaf categorie!',
+        );
+
+        return ids.map((id) => ({ id }));
+    }
 
     async create({ mode, name, categorieId }: CreateCategorieInput) {
         const target = await this.categorieRepository.findOneOrFail({

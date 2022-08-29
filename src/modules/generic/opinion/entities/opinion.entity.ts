@@ -44,11 +44,13 @@ export class OpinionEntity {
     })
     stars: number;
 
-    @ManyToOne(() => UserEntity)
+    @ManyToOne(() => UserEntity, {
+        nullable: true,
+    })
     @HideField()
     author?: UserEntity;
 
-    @OneToOne(() => HideTargetEntity, { cascade: true, eager: true })
+    @OneToOne(() => HideTargetEntity, { cascade: true })
     @JoinColumn()
     @HideField()
     hideTarget: HideTargetEntity;

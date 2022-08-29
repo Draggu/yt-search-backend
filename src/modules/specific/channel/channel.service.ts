@@ -8,6 +8,7 @@ import { OpinionService } from 'modules/generic/opinion/opinion.service';
 import { socialMedia2Map } from 'modules/generic/social-media/helpers/to-map';
 import { Youtube } from 'modules/infrastructure/youtube-api/youtube-api.module';
 import { EntityManager, Repository } from 'typeorm';
+import { CategorieService } from '../categorie/categorie.service';
 import { ProposeChannelInput } from './dto/propose-channel.input';
 import { ChannelProposalEntity } from './entities/channel-proposal.entity';
 import { ChannelRevisionEntity } from './entities/channel-revision.entity';
@@ -24,6 +25,7 @@ export class ChannelService {
         private readonly youtube: Youtube,
         private readonly markdownMentionService: MarkdownMentionService,
         private readonly opinionService: OpinionService,
+        private readonly categorieService: CategorieService,
     ) {}
 
     async comment(
@@ -88,7 +90,9 @@ export class ChannelService {
                       edit.content,
                   ),
                   socialMedia: socialMedia2Map(edit.socialMedia),
-                  categories: edit.categories.map((id) => ({ id })),
+                  categories: await this.categorieService.assertAreLeafsAndMap(
+                      edit.categories,
+                  ),
                   originalEdit: {
                       ...revisionData,
                       acceptedBy: currentUser,
@@ -139,7 +143,9 @@ export class ChannelService {
         await this.fetchChannelFromYT(ytId);
 
         return this.channelProposalRepository.save({
-            categories: categories.map((id) => ({ id })),
+            categories: await this.categorieService.assertAreLeafsAndMap(
+                categories,
+            ),
             content,
             editedBy: currentUser,
             ytId,

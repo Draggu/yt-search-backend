@@ -1,5 +1,7 @@
 import { Args, Parent, ResolveField, Resolver } from '@nestjs/graphql';
 import { PageInput } from 'common/dto/page';
+import { Auth } from 'directives/auth/decorators/auth.decorator';
+import { CurrentUser } from 'directives/auth/types';
 import { HideEntity } from 'modules/generic/hides/entities/hide.entity';
 import { HidesDataloader } from 'modules/generic/hides/hides.dataloader';
 import { OpinionEntity } from 'modules/generic/opinion/entities/opinion.entity';
@@ -28,18 +30,23 @@ export class ArticleFieldResolver {
     }
 
     @ResolveField(() => [OpinionEntity])
-    async opinions(
+    opinions(
         @Parent() article: ArticleEntity,
         @Args('page') page: PageInput,
         @Dataloader() opinionsTargetdataloader: ArticleOpinionsTargetDataloader,
         @Dataloader() opinionsDataloader: OpinionsDataloader,
+        @Auth({
+            optional: true,
+        })
+        currentUser?: CurrentUser,
     ): Promise<OpinionEntity[]> {
-        const { id } = await opinionsTargetdataloader.load(article.id);
-
-        return opinionsDataloader.load({
-            id,
-            page,
-        });
+        return opinionsTargetdataloader.load(article.id).then(({ id }) =>
+            opinionsDataloader.load({
+                id,
+                page,
+                currentUser,
+            }),
+        );
     }
 
     @ResolveField(() => [ArticleRevisionEntity])
@@ -52,18 +59,18 @@ export class ArticleFieldResolver {
     }
 
     @ResolveField(() => [HideEntity])
-    async hides(
+    hides(
         @Parent() article: ArticleEntity,
         @Args('page') page: PageInput,
         @Dataloader() hidesDataloader: HidesDataloader,
         @Dataloader() hidesTargetdataloader: ArticleHidesTargetDataloader,
     ): Promise<HideEntity[]> {
-        const { id } = await hidesTargetdataloader.load(article.id);
-
-        return hidesDataloader.load({
-            id,
-            page,
-        });
+        return hidesTargetdataloader.load(article.id).then(({ id }) =>
+            hidesDataloader.load({
+                id,
+                page,
+            }),
+        );
     }
 
     @ResolveField(() => ArticleRevisionEntity)
@@ -75,7 +82,12 @@ export class ArticleFieldResolver {
     }
 
     @ResolveField(() => Boolean)
-    isHiden(@Parent() article: ArticleEntity): boolean {
-        return article.hideTarget.isHiden;
+    isHiden(
+        @Parent() article: ArticleEntity,
+        @Dataloader() hidesTargetdataloader: ArticleHidesTargetDataloader,
+    ): Promise<boolean> {
+        return hidesTargetdataloader
+            .load(article.id)
+            .then(({ isHiden }) => isHiden);
     }
 }

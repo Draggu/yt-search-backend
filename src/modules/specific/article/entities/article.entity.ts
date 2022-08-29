@@ -40,12 +40,12 @@ export class ArticleEntity {
     @HideField()
     revisions: ArticleRevisionEntity[];
 
-    @OneToOne(() => HideTargetEntity, { cascade: true, eager: true })
+    @OneToOne(() => HideTargetEntity, { cascade: true })
     @JoinColumn()
     @HideField()
     hideTarget: HideTargetEntity;
 
-    @OneToOne(() => OpinionTargetEntity, { cascade: true, eager: true })
+    @OneToOne(() => OpinionTargetEntity, { cascade: true })
     @JoinColumn()
     @HideField()
     opinionTarget: OpinionTargetEntity;
