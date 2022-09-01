@@ -1,11 +1,11 @@
 import { HideField, ObjectType } from '@nestjs/graphql';
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
-import { YoutuberRevisionProposalEntity } from './youtuber-revision.entity';
+import { YoutuberRevisionProposalCommonEntity } from './youtuber-revision-proposal-common.entity';
 import { YoutuberEntity } from './youtuber.entity';
 
 @ObjectType('YoutuberProposal')
 @Entity()
-export class YoutuberProposalEntity extends YoutuberRevisionProposalEntity {
+export class YoutuberProposalEntity extends YoutuberRevisionProposalCommonEntity {
     @Column({ default: false })
     @HideField()
     isRejected: boolean;

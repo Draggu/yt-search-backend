@@ -17,7 +17,7 @@ export class CategorieService {
         private readonly categorieRepository: Repository<CategorieEntity>,
     ) {}
 
-    async assertAreLeafsAndMap(ids: string[]) {
+    async areLeafsAssertAndMap(ids: string[]) {
         const leafsCategories = await this.categorieRepository.count({
             where: {
                 id: In(ids),

@@ -1,6 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import * as assert from 'assert';
+import { promiseAllSlowFail } from 'helpers/promise-all-slow-fails';
 import { marked } from 'marked';
 import { ArticleEntity } from 'modules/domain/article/entities/article.entity';
 import { ChannelEntity } from 'modules/domain/channel/entities/channel.entity';
@@ -43,21 +44,12 @@ export class MarkdownMentionService {
             },
         });
 
-        const mentions = await Promise.allSettled([
+        await promiseAllSlowFail([
             this.findAndAssert(YoutuberEntity, 'id', ids.youtuber, 'youtuber'),
             this.findAndAssert(UserEntity, 'id', ids.user, 'user'),
             this.findAndAssert(ChannelEntity, 'ytId', ids.channel, 'channel'),
             this.findAndAssert(ArticleEntity, 'id', ids.article, 'article'),
         ]);
-
-        const errorMessage = mentions
-            .filter((mention) => mention.status === 'rejected')
-            .map((mention: PromiseRejectedResult) => mention.reason)
-            .join(';\n');
-
-        if (errorMessage) {
-            throw new NotFoundException(errorMessage);
-        }
 
         return ids;
     }

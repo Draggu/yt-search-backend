@@ -123,14 +123,18 @@ type Channel {
 }
 
 type ChannelProposal {
+  categories: [CategorieEntity!]!
   content: String!
   editedAt: DateTime!
+  editedBy: UserEntity!
   id: ID!
+  mentions: MentionEntity!
   socialMedia: [SocialMediaEntity!]!
   ytId: ID!
 }
 
 type ChannelRevision {
+  acceptedBy: UserEntity!
   categories: [CategorieEntity!]!
   content: String!
   editedAt: DateTime!
@@ -251,12 +255,14 @@ input ProposeChannelInput {
   """
   content: String! @constraint(maxLength: 10000)
   socialMedia: [SocialMediaInput!]!
+  youtubers: [ID!]!
   ytId: ID!
 }
 
 input ProposeYoutuberInput {
   birthday: DateTime
   categories: [ID!]!
+  channels: [ID!]!
   """
   this field will be treated as MARKDOWN
   All links with href in following format will be treated as @mention

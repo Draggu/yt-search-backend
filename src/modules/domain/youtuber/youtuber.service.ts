@@ -1,13 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 import { PageInput } from 'common/dto/page';
 import { CurrentUser } from 'directives/auth/types';
-import { MarkdownMentionService } from 'modules/domain/markdown-mention/markdown-mention.service';
 import { CreateOpinionInput } from 'modules/domain/opinion/dto/create-opinion.input';
 import { OpinionService } from 'modules/domain/opinion/opinion.service';
-import { socialMedia2Map } from 'modules/domain/social-media/helpers/to-map';
-import { EntityManager, Repository } from 'typeorm';
-import { CategorieService } from '../categorie/categorie.service';
+import { Repository } from 'typeorm';
+import { ProposalService } from '../proposal/proposal.service';
 import { ProposeYoutuberInput } from './dto/propose-youtuber.input';
 import { YoutuberProposalEntity } from './entities/youtuber-proposal.entity';
 import { YoutuberRevisionEntity } from './entities/youtuber-revision.entity';
@@ -20,10 +18,8 @@ export class YoutuberService {
         private readonly youtuberRepository: Repository<YoutuberEntity>,
         @InjectRepository(YoutuberProposalEntity)
         private readonly youtuberProposalRepository: Repository<YoutuberProposalEntity>,
-        @InjectEntityManager() private readonly entityManager: EntityManager,
-        private readonly markdownMentionService: MarkdownMentionService,
         private readonly opinionService: OpinionService,
-        private readonly categorieService: CategorieService,
+        private readonly proposalService: ProposalService,
     ) {}
 
     async comment(
@@ -44,24 +40,16 @@ export class YoutuberService {
         return this.youtuberRepository.findOne({ where: { id } });
     }
 
-    findProposals({ skip, take }: PageInput, id?: string) {
-        return this.youtuberProposalRepository.find({
-            skip,
-            take,
-            where: { id, isRejected: false },
-        });
+    findProposals(page: PageInput, id?: string) {
+        return this.proposalService.findProposals(
+            YoutuberProposalEntity,
+            page,
+            { id },
+        );
     }
 
-    rejectProposal(id: string): Promise<YoutuberProposalEntity | undefined> {
-        return this.youtuberProposalRepository
-            .createQueryBuilder()
-            .update({ isRejected: true })
-            .where({
-                id,
-            })
-            .returning('*')
-            .execute()
-            .then(({ raw }) => raw[0]);
+    rejectProposal(id: string) {
+        return this.proposalService.rejectProposal(YoutuberProposalEntity, id);
     }
 
     async acceptProposal(
@@ -69,79 +57,78 @@ export class YoutuberService {
         id: string,
         edit?: ProposeYoutuberInput,
     ) {
-        const proposal = await this.youtuberProposalRepository.findOneOrFail({
-            where: { id },
-            relations: {
-                editedBy: true,
-                categories: true,
-                youtuber: true,
+        return this.youtuberProposalRepository.manager.transaction(
+            async (manager) => {
+                const proposal = await manager.findOneOrFail(
+                    YoutuberProposalEntity,
+                    {
+                        where: { id },
+                        relations: {
+                            editedBy: true,
+                            categories: true,
+                            youtuber: true,
+                        },
+                        lock: {
+                            mode: 'pessimistic_write',
+                        },
+                    },
+                );
+
+                const {
+                    youtuber: _youtuber,
+                    id: _,
+                    isRejected: __,
+                    ...revisionData
+                } = proposal;
+
+                const youtuber =
+                    _youtuber ||
+                    (await manager.save(
+                        YoutuberEntity,
+                        this.youtuberRepository.create({
+                            opinionTarget: this.opinionService.createTarget(),
+                        }),
+                    ));
+
+                await manager.remove(YoutuberProposalEntity, proposal);
+
+                const revision = await manager.save(YoutuberRevisionEntity, {
+                    ...revisionData,
+                    originOf: edit
+                        ? {
+                              ...edit,
+                              ...(await this.proposalService.commonMaps(
+                                  edit.content,
+                                  edit.socialMedia,
+                                  edit.categories,
+                              )),
+                              acceptedBy: currentUser,
+                              youtuber,
+                          }
+                        : undefined,
+                    acceptedBy: currentUser,
+                    youtuber,
+                });
+
+                youtuber.lastRevision = revision.originOf || revision;
+
+                return manager.save(YoutuberEntity, youtuber);
             },
-        });
-
-        const {
-            youtuber: _youtuber,
-            id: _,
-            isRejected: __,
-            ...revisionData
-        } = proposal;
-
-        const revision = edit
-            ? {
-                  ...edit,
-                  mentions: await this.markdownMentionService.getMentions(
-                      edit.content,
-                  ),
-                  socialMedia: socialMedia2Map(edit.socialMedia),
-                  categories: await this.categorieService.assertAreLeafsAndMap(
-                      edit.categories,
-                  ),
-                  originalEdit: {
-                      ...revisionData,
-                      acceptedBy: currentUser,
-                  },
-                  acceptedBy: currentUser,
-              }
-            : {
-                  ...revisionData,
-                  acceptedBy: currentUser,
-                  originalEdit: null,
-              };
-
-        return this.entityManager.transaction(async (manager) => {
-            const youtuber =
-                _youtuber ||
-                (await manager.save(
-                    YoutuberEntity,
-                    this.youtuberRepository.create({
-                        opinionTarget: this.opinionService.createTarget(),
-                    }),
-                ));
-
-            await manager.remove(YoutuberProposalEntity, proposal);
-
-            youtuber.lastRevision = await manager.save(YoutuberRevisionEntity, {
-                ...revision,
-                youtuber,
-            });
-
-            return manager.save(YoutuberEntity, youtuber);
-        });
+        );
     }
 
     async propose(
         currentUser: CurrentUser,
-        { categories, socialMedia, ...propose }: ProposeYoutuberInput,
+        { categories, socialMedia, channels, ...propose }: ProposeYoutuberInput,
     ) {
         return this.youtuberProposalRepository.save({
             ...propose,
-            editedBy: currentUser,
-            categories: await this.categorieService.assertAreLeafsAndMap(
-                categories,
-            ),
-            socialMedia: socialMedia2Map(socialMedia),
-            mentions: await this.markdownMentionService.getMentions(
+            ...(await this.proposalService.commonMaps(
                 propose.content,
-            ),
+                socialMedia,
+                categories,
+            )),
+            editedBy: currentUser,
         });
     }
 }

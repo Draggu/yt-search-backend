@@ -1,10 +1,10 @@
 import { Field, HideField, ID, ObjectType } from '@nestjs/graphql';
 import { Column, Entity } from 'typeorm';
-import { ChannelRevisionProposalEntity } from './channel-revision.entity';
+import { ChannelRevisionProposalCommonEntity } from './channel-revision-proposal-common.entity';
 
 @ObjectType('ChannelProposal')
 @Entity()
-export class ChannelProposalEntity extends ChannelRevisionProposalEntity {
+export class ChannelProposalEntity extends ChannelRevisionProposalCommonEntity {
     @Column({
         unique: true,
     })

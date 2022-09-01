@@ -1,14 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import * as assert from 'assert';
 import { PageInput } from 'common/dto/page';
 import { CurrentUser } from 'directives/auth/types';
-import { MarkdownMentionService } from 'modules/domain/markdown-mention/markdown-mention.service';
 import { CreateOpinionInput } from 'modules/domain/opinion/dto/create-opinion.input';
 import { OpinionService } from 'modules/domain/opinion/opinion.service';
-import { socialMedia2Map } from 'modules/domain/social-media/helpers/to-map';
 import { Youtube } from 'modules/infrastructure/youtube-api/youtube-api.module';
-import { EntityManager, Repository } from 'typeorm';
-import { CategorieService } from '../categorie/categorie.service';
+import { Repository } from 'typeorm';
+import { ProposalService } from '../proposal/proposal.service';
 import { ProposeChannelInput } from './dto/propose-channel.input';
 import { ChannelProposalEntity } from './entities/channel-proposal.entity';
 import { ChannelRevisionEntity } from './entities/channel-revision.entity';
@@ -21,11 +20,9 @@ export class ChannelService {
         private readonly channelRepository: Repository<ChannelEntity>,
         @InjectRepository(ChannelProposalEntity)
         private readonly channelProposalRepository: Repository<ChannelProposalEntity>,
-        @InjectEntityManager() private readonly entityManager: EntityManager,
-        private readonly youtube: Youtube,
-        private readonly markdownMentionService: MarkdownMentionService,
         private readonly opinionService: OpinionService,
-        private readonly categorieService: CategorieService,
+        private readonly proposalService: ProposalService,
+        private readonly youtube: Youtube,
     ) {}
 
     async comment(
@@ -48,24 +45,14 @@ export class ChannelService {
         });
     }
 
-    findProposals({ skip, take }: PageInput, ytId?: string) {
-        return this.channelProposalRepository.find({
-            skip,
-            take,
-            where: { ytId, isRejected: false },
+    findProposals(page: PageInput, ytId?: string) {
+        return this.proposalService.findProposals(ChannelProposalEntity, page, {
+            ytId,
         });
     }
 
-    rejectProposal(id: string): Promise<ChannelProposalEntity | undefined> {
-        return this.channelProposalRepository
-            .createQueryBuilder()
-            .update({ isRejected: true })
-            .where({
-                id,
-            })
-            .returning('*')
-            .execute()
-            .then(({ raw }) => raw[0]);
+    rejectProposal(id: string) {
+        return this.proposalService.rejectProposal(ChannelProposalEntity, id);
     }
 
     async acceptProposal(
@@ -73,84 +60,85 @@ export class ChannelService {
         id: string,
         edit?: ProposeChannelInput,
     ) {
-        const proposal = await this.channelProposalRepository.findOneOrFail({
-            where: { id },
-            relations: {
-                editedBy: true,
-                categories: true,
-            },
-        });
-
-        const { ytId, id: _, isRejected: __, ...revisionData } = proposal;
-
-        const revision = edit
-            ? {
-                  ...edit,
-                  mentions: await this.markdownMentionService.getMentions(
-                      edit.content,
-                  ),
-                  socialMedia: socialMedia2Map(edit.socialMedia),
-                  categories: await this.categorieService.assertAreLeafsAndMap(
-                      edit.categories,
-                  ),
-                  originalEdit: {
-                      ...revisionData,
-                      acceptedBy: currentUser,
-                  },
-                  acceptedBy: currentUser,
-              }
-            : {
-                  ...revisionData,
-                  acceptedBy: currentUser,
-                  originalEdit: null,
-              };
-
-        return this.entityManager.transaction(async (manager) => {
-            const channel = await manager
-                .findOne(ChannelEntity, {
-                    where: {
-                        ytId,
+        return this.channelProposalRepository.manager.transaction(
+            async (manager) => {
+                const proposal = await manager.findOneOrFail(
+                    ChannelProposalEntity,
+                    {
+                        where: { id },
+                        relations: {
+                            editedBy: true,
+                            categories: true,
+                        },
+                        lock: {
+                            mode: 'pessimistic_write',
+                        },
                     },
-                })
-                .then(
-                    async (channel) =>
-                        channel ||
-                        manager.save(ChannelEntity, {
-                            ytId,
-                            name: await this.fetchChannelFromYT(ytId).then(
-                                ({ title }) => title!,
-                            ),
-                            opinionTarget: this.opinionService.createTarget(),
-                        }),
                 );
 
-            await manager.remove(ChannelProposalEntity, proposal);
+                const {
+                    ytId,
+                    id: _,
+                    isRejected: __,
+                    ...revisionData
+                } = proposal;
 
-            channel.lastRevision = await manager.save(ChannelRevisionEntity, {
-                ...revision,
-                channel,
-            });
+                const channel =
+                    (await manager.findOne(ChannelEntity, {
+                        where: {
+                            ytId,
+                        },
+                    })) ||
+                    (await manager.save(ChannelEntity, {
+                        ytId,
+                        name: await this.fetchChannelFromYT(ytId).then(
+                            ({ title }) => title!,
+                        ),
+                        opinionTarget: this.opinionService.createTarget(),
+                    }));
 
-            return manager.save(ChannelEntity, channel);
-        });
+                await manager.remove(ChannelProposalEntity, proposal);
+
+                const revision = await manager.save(ChannelRevisionEntity, {
+                    ...revisionData,
+                    originOf: edit
+                        ? {
+                              ...edit,
+                              ...(await this.proposalService.commonMaps(
+                                  edit.content,
+                                  edit.socialMedia,
+                                  edit.categories,
+                              )),
+                              acceptedBy: currentUser,
+                              channel,
+                          }
+                        : undefined,
+                    acceptedBy: currentUser,
+                    channel,
+                });
+
+                channel.lastRevision = revision.originOf || revision;
+
+                return manager.save(ChannelEntity, channel);
+            },
+        );
     }
 
     async propose(
         currentUser: CurrentUser,
-        { categories, content, ytId, socialMedia }: ProposeChannelInput,
+        { categories, socialMedia, ...propose }: ProposeChannelInput,
     ) {
         // check if channel exists
-        await this.fetchChannelFromYT(ytId);
+        await this.fetchChannelFromYT(propose.ytId);
 
         return this.channelProposalRepository.save({
-            categories: await this.categorieService.assertAreLeafsAndMap(
+            ...propose,
+            ...(await this.proposalService.commonMaps(
+                propose.content,
+                socialMedia,
                 categories,
-            ),
-            content,
+            )),
             editedBy: currentUser,
-            ytId,
-            socialMedia: socialMedia2Map(socialMedia),
-            mentions: await this.markdownMentionService.getMentions(content),
         });
     }
 
@@ -162,10 +150,8 @@ export class ChannelService {
 
         const channel = res.data.items?.[0];
 
-        if (channel) {
-            return channel.snippet!;
-        } else {
-            throw new Error(`youtube not found channel with id: ${ytId}`);
-        }
+        assert(channel, `youtube not found channel with id: ${ytId}`);
+
+        return channel.snippet!;
     }
 }

@@ -13,6 +13,7 @@ export class ChannelRevisionsDataloader extends RelationPaginatedDataloader(
         column: 'editedAt',
         order: 'DESC',
     },
+    (qb) => qb.andWhere('"originOfId" IS NULL'),
 ) {}
 
 @Injectable()
@@ -26,6 +27,14 @@ export class ChannelRevisionEditorDataloader extends RelationDataloader(
     'id',
     'editedBy',
 ) {}
+
+@Injectable()
+export class ChannelRevisionAcceptorDataloader extends RelationDataloader(
+    ChannelRevisionEntity,
+    'id',
+    'acceptedBy',
+) {}
+
 @Injectable()
 export class ChannelContentDataloader extends RelationDataloader(
     ChannelEntity,

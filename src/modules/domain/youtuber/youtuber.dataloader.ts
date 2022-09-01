@@ -13,6 +13,7 @@ export class YoutuberRevisionsDataloader extends RelationPaginatedDataloader(
         column: 'editedAt',
         order: 'DESC',
     },
+    (qb) => qb.andWhere('"originOfId" IS NULL'),
 ) {}
 
 @Injectable()
