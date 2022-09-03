@@ -14,6 +14,7 @@ import { ChannelModule } from 'modules/domain/channel/channel.module';
 import { SearchModule } from 'modules/domain/search/search.module';
 import { UserModule } from 'modules/domain/user/user.module';
 import { YoutuberModule } from 'modules/domain/youtuber/youtuber.module';
+import { LinkingsModule } from './modules/domain/linkings/linkings.module';
 
 @Module({
     imports: [
@@ -34,6 +35,7 @@ import { YoutuberModule } from 'modules/domain/youtuber/youtuber.module';
         ArticleModule,
         CategorieModule,
         SearchModule,
+        LinkingsModule,
     ],
 })
 export class AppModule {}

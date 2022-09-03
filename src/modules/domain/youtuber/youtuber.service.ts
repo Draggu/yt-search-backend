@@ -59,20 +59,17 @@ export class YoutuberService {
     ) {
         return this.youtuberProposalRepository.manager.transaction(
             async (manager) => {
-                const proposal = await manager.findOneOrFail(
-                    YoutuberProposalEntity,
-                    {
-                        where: { id },
-                        relations: {
-                            editedBy: true,
-                            categories: true,
-                            youtuber: true,
-                        },
-                        lock: {
-                            mode: 'pessimistic_write',
-                        },
-                    },
-                );
+                const proposal = await manager
+                    .createQueryBuilder(YoutuberProposalEntity, 'p')
+                    .loadAllRelationIds({
+                        disableMixedMap: true,
+                    })
+                    .where({ id })
+                    .setLock('pessimistic_write', undefined, [
+                        manager.connection.getMetadata(YoutuberProposalEntity)
+                            .tableName,
+                    ])
+                    .getOneOrFail();
 
                 const {
                     youtuber: _youtuber,
@@ -119,7 +116,7 @@ export class YoutuberService {
 
     async propose(
         currentUser: CurrentUser,
-        { categories, socialMedia, channels, ...propose }: ProposeYoutuberInput,
+        { categories, socialMedia, ...propose }: ProposeYoutuberInput,
     ) {
         return this.youtuberProposalRepository.save({
             ...propose,

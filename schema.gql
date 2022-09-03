@@ -164,6 +164,12 @@ input CreateHideInput {
   reason: String
 }
 
+input CreateLinkingInput {
+  channelYtId: ID!
+  isRemoving: Boolean = false
+  youtuberId: ID!
+}
+
 input CreateOpinionInput {
   content: String @constraint(max: 500)
   stars: Int! @constraint(max: 10, min: 1)
@@ -182,6 +188,12 @@ type HideEntity {
   reason: String
 }
 
+type LinkingProposalEntity {
+  createdAt: DateTime!
+  id: String!
+  isRemoving: Boolean!
+}
+
 input LoginInput {
   deviceName: String!
   email: String! @constraint(format: "email")
@@ -197,6 +209,7 @@ type MentionEntity {
 
 type Mutation {
   acceptChannelProposal(edit: ProposeChannelInput, id: ID!): Channel! @auth(permissions: [ACCEPT_PROPOSAL])
+  acceptLinking(id: ID!): ID! @auth(permissions: [ACCEPT_PROPOSAL])
   acceptYoutuberProposal(edit: ProposeYoutuberInput, id: ID!): YoutuberEntity! @auth(permissions: [ACCEPT_PROPOSAL])
   """user can not modify own permissions!"""
   changePermissions(permissions: UpdatePermissionInput!): UserEntity! @auth(confirmationRequired: true, permissions: [MODIFY_PERMISSION]) @recaptchaV3(actionName: "change-permissions")
@@ -208,9 +221,11 @@ type Mutation {
   login(login: LoginInput!): AuthPayload! @recaptchaV3(actionName: "login")
   logout: TokenEntity! @auth @recaptchaV3(actionName: "logout")
   proposeChannel(proposal: ProposeChannelInput!): ChannelProposal! @auth
+  proposeLinking(createLinkingInput: CreateLinkingInput!): LinkingProposalEntity! @auth(permissions: [PROPOSE])
   proposeYoutuber(proposal: ProposeYoutuberInput!): YoutuberProposal! @auth
   register(register: RegisterInput!): AuthPayload! @recaptchaV3(actionName: "register")
   rejectChannelProposal(id: ID!): ChannelProposal @auth(permissions: [ACCEPT_PROPOSAL])
+  rejectLinking(id: ID!): LinkingProposalEntity! @auth(permissions: [ACCEPT_PROPOSAL])
   rejectYoutuberProposal(id: ID!): YoutuberProposal @auth(permissions: [ACCEPT_PROPOSAL])
   removeCategorie(id: ID!): CategorieEntity!
   renameCategorie(updateCategorieInput: UpdateCategorieInput!): CategorieEntity!
@@ -255,14 +270,12 @@ input ProposeChannelInput {
   """
   content: String! @constraint(maxLength: 10000)
   socialMedia: [SocialMediaInput!]!
-  youtubers: [ID!]!
   ytId: ID!
 }
 
 input ProposeYoutuberInput {
   birthday: DateTime
   categories: [ID!]!
-  channels: [ID!]!
   """
   this field will be treated as MARKDOWN
   All links with href in following format will be treated as @mention
@@ -282,6 +295,7 @@ type Query {
   article(id: ID!): ArticleEntity @auth(optional: true)
   channel(ytId: ID!): Channel
   channelProposals(page: PageInput!, ytId: ID): [ChannelProposal!]! @auth(permissions: [ACCEPT_PROPOSAL])
+  linkingProposals(page: PageInput!): [LinkingProposalEntity!]! @auth(permissions: [ACCEPT_PROPOSAL])
   """
   if authed user permissions include TOGGLE_HIDE hiden articles will be shown
   """

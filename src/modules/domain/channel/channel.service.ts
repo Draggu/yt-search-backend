@@ -62,19 +62,17 @@ export class ChannelService {
     ) {
         return this.channelProposalRepository.manager.transaction(
             async (manager) => {
-                const proposal = await manager.findOneOrFail(
-                    ChannelProposalEntity,
-                    {
-                        where: { id },
-                        relations: {
-                            editedBy: true,
-                            categories: true,
-                        },
-                        lock: {
-                            mode: 'pessimistic_write',
-                        },
-                    },
-                );
+                const proposal = await manager
+                    .createQueryBuilder(ChannelProposalEntity, 'p')
+                    .loadAllRelationIds({
+                        disableMixedMap: true,
+                    })
+                    .where({ id })
+                    .setLock('pessimistic_write', undefined, [
+                        manager.connection.getMetadata(ChannelProposalEntity)
+                            .tableName,
+                    ])
+                    .getOneOrFail();
 
                 const {
                     ytId,

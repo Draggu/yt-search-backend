@@ -28,9 +28,6 @@ export class ProposeYoutuberInput {
     @Field(() => [ID])
     categories: string[];
 
-    @Field(() => [ID])
-    channels: string[];
-
     @Field(() => [SocialMediaObject])
     socialMedia: SocialMediaObject[];
 }

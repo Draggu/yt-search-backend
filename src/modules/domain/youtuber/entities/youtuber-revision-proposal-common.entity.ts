@@ -35,10 +35,14 @@ export class YoutuberRevisionProposalCommonEntity {
     @Column()
     name: string;
 
-    @Column()
+    @Column({
+        nullable: true,
+    })
     realName?: string;
 
-    @Column()
+    @Column({
+        nullable: true,
+    })
     birthday?: Date;
 
     @Column()

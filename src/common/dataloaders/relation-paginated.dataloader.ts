@@ -46,10 +46,7 @@ export const RelationPaginatedDataloader = <T>(
                                 );
 
                             if (hidenProperty) {
-                                qb.addSelect('hide."isHiden"').leftJoin(
-                                    `entity.${hidenProperty}`,
-                                    'hide',
-                                );
+                                qb.leftJoin(`entity.${hidenProperty}`, 'hide');
                             }
 
                             extra?.(qb);
